@@ -1,0 +1,26 @@
+{
+  "$schema": "./schemas/app-config.schema.json",
+  "name": "Photo Re-Enactor",
+  "nameJa": "同じ構図で撮る",
+  "slug": "photo-re-enactor",
+  "version": "1.0.0",
+  "description": "Use a reference photo as a ghost overlay to retake a scene from nearly the same composition, entirely in the browser.",
+  "descriptionJa": "元写真をカメラ映像へ重ね、できるだけ同じ構図で撮り直すためのブラウザツールです。",
+  "defaultLanguage": "auto",
+  "repository": {
+    "owner": "ttomohisa",
+    "name": "htmlapps-photo-re-enactor"
+  },
+  "build": {
+    "output": "dist/index.html",
+    "blockRuntimeNetwork": true,
+    "selfExtract": {
+      "enabled": true,
+      "output": "dist/index.self-extract.html"
+    },
+    "sizeBudget": {
+      "readableWarningMb": 8,
+      "selfExtractWarningMb": 4
+    }
+  }
+}

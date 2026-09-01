@@ -1,0 +1,1611 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f5f5f2">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; media-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Photo Re-Enactor</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2316624F'/%3E%3Crect x='14' y='18' width='29' height='25' rx='4' fill='none' stroke='white' stroke-width='3.5'/%3E%3Crect x='21' y='13' width='29' height='25' rx='4' fill='none' stroke='white' stroke-width='3.5' opacity='.8'/%3E%3Cpath d='M46 39v12M40 45h12' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='46' cy='45' r='8' fill='none' stroke='white' stroke-width='2.5' opacity='.9'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f5f2;
+      --surface: #ffffff;
+      --surface-muted: #f0f0ed;
+      --surface-hover: #e9e9e5;
+      --text: #20211f;
+      --muted: #666963;
+      --line: #dadbd6;
+      --line-strong: #bfc1ba;
+      --accent: #16624f;
+      --accent-hover: #0e503f;
+      --accent-soft: #e1f0ea;
+      --danger: #b3261e;
+      --focus: #4d8bc7;
+      --shadow-sm: 0 1px 2px rgba(25, 28, 24, .08), 0 1px 6px rgba(25, 28, 24, .04);
+      --shadow-md: 0 16px 44px rgba(25, 28, 24, .14);
+      --radius: 14px;
+      --header-height: 66px;
+      --shoot-dock-height: 96px;
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    body.camera-mode { background: #e9e9e5; }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    button:focus-visible, input:focus-visible, summary:focus-visible, [tabindex]:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--focus) 58%, transparent);
+      outline-offset: 2px;
+    }
+    [hidden] { display: none !important; }
+    .sr-only {
+      position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important;
+      overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important;
+    }
+    .app-header {
+      position: sticky;
+      z-index: 50;
+      top: 0;
+      min-height: var(--header-height);
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+      background: color-mix(in srgb, var(--bg) 93%, transparent);
+      backdrop-filter: blur(18px) saturate(1.25);
+    }
+    .app-header-inner {
+      width: min(1180px, 100%);
+      min-height: var(--header-height);
+      margin: 0 auto;
+      padding: 10px clamp(14px, 2.8vw, 30px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand { display: flex; min-width: 0; align-items: center; gap: 10px; }
+    .brand-mark {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--accent);
+      color: #fff;
+    }
+    .brand-mark svg { width: 25px; height: 25px; display: block; }
+    .brand-copy { min-width: 0; }
+    .brand-name { margin: 0; font-size: 16px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .version-badge {
+      display: inline-flex; margin-left: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface-muted); color: var(--muted); font-size: 10px; font-weight: 700; vertical-align: 2px;
+    }
+    .brand-meta { margin: 2px 0 0; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .language-button, .header-icon-button {
+      min-width: 0; padding: 5px 1px; border: 0; background: transparent; color: var(--muted); cursor: pointer;
+      font-size: 12px; font-weight: 750; transition: color .16s ease, opacity .16s ease;
+    }
+    .language-button:hover, .header-icon-button:hover { color: var(--text); }
+    .header-icon-button { display: grid; place-items: center; }
+    .header-icon-button svg { width: 20px; height: 20px; display: block; }
+    .main { width: min(1040px, 100%); margin: 0 auto; padding: 22px clamp(14px, 2.8vw, 30px) 52px; }
+    .page-intro { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 0 2px 18px; }
+    .page-intro h2 { margin: 0; font-size: clamp(23px, 4vw, 31px); line-height: 1.24; letter-spacing: -.03em; }
+    .page-intro p { margin: 7px 0 0; max-width: 680px; color: var(--muted); font-size: 13px; }
+    .local-badge {
+      display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; margin-top: 3px; padding: 7px 10px;
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 999px; background: var(--accent-soft);
+      color: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap;
+    }
+    .local-badge svg { width: 15px; height: 15px; }
+    .card { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
+    .start-card { padding: clamp(18px, 4vw, 28px); }
+    .drop-zone {
+      min-height: 286px;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 13px;
+      border: 1.5px dashed var(--line-strong);
+      border-radius: 16px;
+      padding: 28px;
+      background: #fbfbf9;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .drop-zone:hover, .drop-zone.is-dragging { border-color: var(--accent); background: color-mix(in srgb, var(--accent-soft) 55%, white); }
+    .drop-icon { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 16px; background: var(--accent-soft); color: var(--accent); }
+    .drop-icon svg { width: 31px; height: 31px; }
+    .drop-title { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+    .drop-body { margin: 0; max-width: 430px; color: var(--muted); font-size: 13px; }
+    .format-note { color: var(--muted); font-size: 11px; }
+    .button {
+      min-height: 42px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface);
+      font-weight: 750; cursor: pointer; transition: border-color .16s ease, background .16s ease, transform .16s ease;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .button:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .button:active { transform: translateY(1px); }
+    .button.primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+    .button.primary:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+    .button.quiet { border-color: transparent; background: transparent; color: var(--muted); }
+    .button.quiet:hover { background: var(--surface-muted); color: var(--text); }
+    .button:disabled { opacity: .48; cursor: default; transform: none; }
+    .privacy-line { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; color: var(--muted); font-size: 12px; }
+    .privacy-line svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 1px; color: var(--accent); }
+    .ready-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 18px; }
+    .preview-card { overflow: hidden; min-width: 0; }
+    .reference-preview-wrap { position: relative; min-height: 320px; background: #20211f; display: grid; place-items: center; overflow: hidden; border-radius: 17px 17px 0 0; }
+    .reference-preview-wrap img { width: 100%; height: 100%; max-height: 560px; object-fit: contain; display: block; }
+    .preview-caption { padding: 13px 15px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .reference-name { min-width: 0; font-weight: 750; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .reference-meta { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .ready-actions { padding: 22px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+    .step-label { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .ready-actions h3 { margin: 0; font-size: 21px; letter-spacing: -.02em; }
+    .ready-actions p { margin: 0; color: var(--muted); font-size: 13px; }
+    .ready-actions .button.primary { width: 100%; min-height: 50px; font-size: 15px; }
+    .error-box { display: none; padding: 12px 13px; border: 1px solid color-mix(in srgb, var(--danger) 25%, var(--line)); border-radius: 12px; background: #fff4f2; color: #6e201b; font-size: 12px; }
+    .error-box.is-visible { display: block; }
+    .error-box strong { display: block; margin-bottom: 3px; font-size: 13px; }
+    .error-detail { margin-top: 8px; color: #7c514d; overflow-wrap: anywhere; }
+    .camera-card { overflow: visible; background: transparent; border: 0; box-shadow: none; }
+    .camera-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .camera-toolbar .button { min-height: 38px; padding: 7px 10px; background: color-mix(in srgb, var(--surface) 92%, transparent); }
+    .camera-hint { color: var(--muted); font-size: 12px; text-align: center; }
+    .camera-stage {
+      --stage-ratio: 4 / 3;
+      position: relative;
+      width: 100%;
+      aspect-ratio: var(--stage-ratio);
+      max-height: calc(100dvh - 260px);
+      min-height: 300px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #111;
+      box-shadow: var(--shadow-md);
+      isolation: isolate;
+      touch-action: none;
+      user-select: none;
+    }
+    .camera-stage video, .ghost-overlay, .outline-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .camera-stage video { z-index: 1; background: #111; }
+    .ghost-overlay, .outline-overlay { z-index: 2; transform-origin: 50% 50%; pointer-events: none; will-change: transform, opacity, clip-path; }
+    .outline-overlay { opacity: .92; }
+    .camera-stage.is-adjusting { touch-action: none; cursor: grab; }
+    .camera-stage.is-adjusting:active { cursor: grabbing; }
+    .camera-stage:not(.is-adjusting) { touch-action: manipulation; cursor: default; }
+    .camera-stage.is-adjusting .stage-shade { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 72%, white); }
+    .camera-stage.mode-split .ghost-overlay { clip-path: inset(0 calc(100% - var(--split-pos, 50%)) 0 0); }
+    .split-divider { position: absolute; z-index: 7; top: 0; bottom: 0; left: var(--split-pos, 50%); width: 2px; transform: translateX(-1px); background: rgba(255,255,255,.9); box-shadow: 0 0 0 1px rgba(0,0,0,.2); pointer-events: none; }
+    .split-divider::after { content: ''; position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+    .split-divider::before { content: '↔'; position: absolute; z-index: 1; left: 50%; top: 50%; transform: translate(-50%, -52%); color: var(--accent); font-size: 16px; font-weight: 800; }
+    .stage-shade { position: absolute; inset: 0; z-index: 3; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); border-radius: inherit; }
+    .stage-top {
+      position: absolute; z-index: 5; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+      pointer-events: none;
+    }
+    .stage-pill {
+      min-height: 31px; padding: 6px 9px; border-radius: 999px; background: rgba(18, 20, 18, .68); color: #fff; backdrop-filter: blur(9px);
+      display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 750; max-width: 70%;
+    }
+    .stage-pill svg { width: 14px; height: 14px; }
+    .stage-pill span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .stage-center-hint {
+      position: absolute; z-index: 4; left: 50%; bottom: 12px; transform: translateX(-50%); pointer-events: none;
+      max-width: calc(100% - 24px); padding: 7px 11px; border-radius: 999px; background: rgba(18, 20, 18, .66); color: white;
+      font-size: 11px; font-weight: 700; text-align: center; backdrop-filter: blur(8px);
+    }
+    .capture-flash { position: absolute; z-index: 8; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+    .camera-stage.is-flashing .capture-flash { animation: captureFlash .22s ease-out; }
+    @keyframes captureFlash { 0% { opacity: 0; } 35% { opacity: .75; } 100% { opacity: 0; } }
+    .overlay-settings { margin-top: 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .overlay-settings summary { list-style: none; cursor: pointer; min-height: 45px; padding: 10px 13px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 750; }
+    .overlay-settings summary::-webkit-details-marker { display: none; }
+    .summary-title { display: inline-flex; align-items: center; gap: 8px; }
+    .summary-title svg { width: 18px; height: 18px; color: var(--accent); }
+    .summary-value { color: var(--muted); font-size: 11px; font-weight: 650; }
+    .settings-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 4px 14px 14px; border-top: 1px solid var(--line); }
+    .overlay-mode-field { grid-column: 1 / -1; padding-top: 11px; }
+    .overlay-mode-label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 750; }
+    .overlay-mode-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .overlay-mode-button { min-height: 38px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 750; cursor: pointer; }
+    .overlay-mode-button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--accent) 56%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+    .overlay-mode-hint { min-height: 16px; margin-top: 6px; color: var(--muted); font-size: 10px; }
+    .split-position-field { grid-column: 1 / -1; padding-top: 0; }
+    @media (max-width: 520px) { .overlay-mode-options { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    .range-field { min-width: 0; padding-top: 11px; }
+    .range-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; font-size: 11px; }
+    .range-head label { font-weight: 750; }
+    .range-value { color: var(--muted); font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); }
+    .settings-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding-top: 2px; }
+    .shoot-dock {
+      margin-top: 12px; display: grid; grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr); align-items: center; gap: 10px;
+      padding: 10px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-sm);
+    }
+    .dock-action { min-width: 0; min-height: 58px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; color: var(--muted); display: grid; place-items: center; align-content: center; gap: 3px; font-size: 10px; font-weight: 750; }
+    .dock-action:hover { background: var(--surface-muted); color: var(--text); }
+    .dock-action svg { width: 23px; height: 23px; }
+    .shutter-wrap { display: grid; place-items: center; gap: 3px; color: var(--muted); font-size: 10px; font-weight: 750; }
+    .shutter-button {
+      width: 70px; height: 70px; border-radius: 50%; border: 4px solid #fff; outline: 2px solid color-mix(in srgb, var(--accent) 70%, #111);
+      background: #fff; box-shadow: 0 3px 14px rgba(20, 22, 20, .2); cursor: pointer; position: relative;
+    }
+    .shutter-button::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: var(--accent); transition: transform .12s ease, background .12s ease; }
+    .shutter-button:hover::after { background: var(--accent-hover); }
+    .shutter-button:active::after { transform: scale(.92); }
+    .shutter-button:disabled { opacity: .46; cursor: default; }
+    .result-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .55fr); gap: 18px; }
+    .compare-card { padding: 14px; min-width: 0; }
+    .compare-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .compare-head h3 { margin: 0; font-size: 17px; }
+    .compare-head p { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+    .compare-frame {
+      --compare-pos: 50%; --result-ratio: 4 / 3;
+      position: relative; width: 100%; aspect-ratio: var(--result-ratio); max-height: 640px; overflow: hidden; border-radius: 14px; background: #111;
+      cursor: ew-resize; touch-action: none; user-select: none;
+    }
+    .compare-frame:focus-visible { outline: 3px solid color-mix(in srgb, var(--focus) 72%, transparent); outline-offset: 3px; }
+    .compare-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #111; user-select: none; pointer-events: none; }
+    .compare-before { z-index: 2; clip-path: inset(0 calc(100% - var(--compare-pos)) 0 0); }
+    .compare-divider { position: absolute; z-index: 4; top: 0; bottom: 0; left: var(--compare-pos); width: 2px; transform: translateX(-1px); background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.18); pointer-events: none; }
+    .compare-handle { position: absolute; z-index: 5; top: 50%; left: clamp(22px, var(--compare-pos), calc(100% - 22px)); width: 42px; height: 42px; transform: translate(-50%, -50%); border-radius: 50%; background: #fff; color: var(--accent); display: grid; place-items: center; box-shadow: 0 2px 10px rgba(0,0,0,.24); pointer-events: none; }
+    .compare-handle svg { width: 19px; height: 19px; }
+    .compare-label { position: absolute; z-index: 6; top: 10px; padding: 5px 8px; border-radius: 999px; background: rgba(18,20,18,.66); color: #fff; font-size: 10px; font-weight: 800; pointer-events: none; }
+    .compare-label.before { left: 10px; } .compare-label.after { right: 10px; }
+    .compare-drag-hint { margin: 9px 2px 0; color: var(--muted); font-size: 11px; text-align: center; }
+    .result-actions { padding: 20px; display: flex; flex-direction: column; gap: 14px; align-self: start; }
+    .result-actions h3 { margin: 0; font-size: 20px; }
+    .result-actions p { margin: 0; color: var(--muted); font-size: 12px; }
+    .export-field { display: grid; gap: 6px; }
+    .export-label { color: var(--muted); font-size: 11px; font-weight: 750; }
+    .filename-control { display: grid; grid-template-columns: minmax(0,1fr) auto; overflow: hidden; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); }
+    .filename-control:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 20%, transparent); }
+    .filename-input { width: 100%; min-width: 0; min-height: 43px; border: 0; outline: 0; padding: 8px 10px; background: transparent; }
+    .filename-extension { display: grid; place-items: center; padding: 0 10px; color: var(--muted); background: var(--surface-muted); font-size: 11px; }
+    .result-actions .button { width: 100%; }
+    dialog { width: min(580px, calc(100vw - 28px)); max-height: min(76vh, 680px); border: 0; border-radius: 16px; padding: 0; box-shadow: var(--shadow-md); background: var(--surface); color: var(--text); }
+    dialog::backdrop { background: rgba(20, 22, 20, .46); backdrop-filter: blur(2px); }
+    .dialog-body { max-height: min(76vh, 680px); overflow: auto; padding: 20px; overscroll-behavior: contain; }
+    .dialog-head { position: sticky; z-index: 2; top: -20px; margin: -20px -20px 14px; padding: 17px 20px 12px; display: flex; align-items: center; gap: 12px; background: color-mix(in srgb, var(--surface) 94%, transparent); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+    .dialog-head h2 { margin: 0; font-size: 18px; }
+    .dialog-close { margin-left: auto; border: 0; background: transparent; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; color: var(--muted); }
+    .dialog-close:hover { background: var(--surface-muted); color: var(--text); }
+    .dialog-close svg { width: 19px; height: 19px; }
+    .dialog-body h3 { margin: 19px 0 7px; font-size: 14px; }
+    .dialog-body p, .dialog-body li { color: var(--muted); font-size: 12px; }
+    .dialog-body ol, .dialog-body ul { padding-left: 20px; }
+    .dialog-note { padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--accent) !important; }
+    .app-toast {
+      position: fixed; z-index: 100; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
+      max-width: min(420px, calc(100vw - 36px)); min-height: 46px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 12px;
+      background: #20211f; color: #fff; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 12px;
+      opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s ease, transform .18s ease;
+    }
+    .app-toast.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .app-toast-message { min-width: 0; flex: 1; font-size: 12px; }
+    .app-toast-action { border: 0; background: transparent; color: #bde5d8; font: inherit; font-weight: 800; cursor: pointer; }
+    footer { width: min(1040px, 100%); margin: 0 auto; padding: 0 clamp(14px, 2.8vw, 30px) 32px; color: var(--muted); font-size: 11px; }
+    @media (max-width: 760px) {
+      .main { padding-top: 14px; }
+      .page-intro { align-items: center; }
+      .page-intro h2 { font-size: 24px; }
+      .page-intro p { font-size: 12px; }
+      .local-badge { display: none; }
+      .ready-grid, .result-grid { grid-template-columns: 1fr; }
+      .ready-actions { padding: 18px; }
+      .settings-grid { grid-template-columns: 1fr; gap: 5px; }
+      .settings-actions { grid-column: auto; }
+      .reference-preview-wrap { min-height: 260px; }
+    }
+    @media (max-width: 600px) {
+      body.camera-mode { padding-bottom: calc(var(--shoot-dock-height) + 12px + env(safe-area-inset-bottom)); }
+      .app-header-inner { padding-inline: 12px; }
+      .brand-meta { display: none; }
+      .brand-name { font-size: 15px; }
+      .brand-mark { width: 34px; height: 34px; }
+      .header-actions { gap: 10px; }
+      .main { padding: 12px 9px 34px; }
+      .page-intro { padding-inline: 5px; padding-bottom: 13px; }
+      .page-intro h2 { font-size: 22px; }
+      .page-intro p { margin-top: 5px; }
+      .start-card { padding: 10px; border-radius: 16px; }
+      .drop-zone { min-height: 290px; padding: 22px 15px; }
+      .drop-title { font-size: 18px; }
+      .ready-grid { gap: 10px; }
+      .reference-preview-wrap { min-height: 280px; }
+      .preview-caption { padding: 11px 12px; }
+      .ready-actions { padding: 16px; }
+      .camera-toolbar { padding-inline: 2px; }
+      .camera-hint { display: none; }
+      .camera-stage { min-height: 300px; max-height: calc(100dvh - 230px); border-radius: 17px; }
+      .stage-top { top: 8px; left: 8px; right: 8px; }
+      .stage-center-hint { bottom: 9px; }
+      .overlay-settings { margin-top: 8px; }
+      .overlay-settings[open] { margin-bottom: calc(var(--shoot-dock-height) + 14px + env(safe-area-inset-bottom)); }
+      .shoot-dock {
+        position: fixed; z-index: 80; left: 0; right: 0; bottom: 0; margin: 0; height: calc(var(--shoot-dock-height) + env(safe-area-inset-bottom));
+        grid-template-columns: 1fr 100px 1fr; border: 0; border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent); border-radius: 0;
+        padding: 6px 10px calc(6px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.95); backdrop-filter: blur(18px) saturate(1.3); box-shadow: 0 -8px 24px rgba(20,22,20,.07);
+      }
+      .dock-action { min-height: 58px; }
+      .shutter-button { width: 62px; height: 62px; }
+      .result-grid { gap: 10px; }
+      .compare-card { padding: 9px; }
+      .result-actions { padding: 16px; }
+      dialog { width: calc(100vw - 14px); max-height: calc(100dvh - 14px); border-radius: 18px; }
+      .dialog-body { max-height: calc(100dvh - 14px); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+      .app-toast { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); max-width: none; }
+      body.camera-mode .app-toast { bottom: calc(var(--shoot-dock-height) + 16px + env(safe-area-inset-bottom)); }
+      footer { display: none; }
+    }
+    .guide-score-pill { transition: opacity .18s ease; }
+    .guide-score-pill.is-muted { opacity: .58; }
+    .guide-score-pill.is-hidden { visibility: hidden; }
+    .guide-instruction {
+      position: absolute; z-index: 6; left: 50%; bottom: 12px; transform: translateX(-50%); pointer-events: none;
+      width: min(520px, calc(100% - 24px)); min-height: 44px; padding: 8px 13px; border-radius: 14px;
+      background: rgba(18, 20, 18, .72); color: #fff; backdrop-filter: blur(9px); text-align: center;
+      display: grid; place-items: center; gap: 1px; box-shadow: 0 4px 18px rgba(0,0,0,.15);
+    }
+    .guide-instruction strong { font-size: 13px; line-height: 1.3; }
+    .guide-instruction span { font-size: 9px; line-height: 1.25; opacity: .76; }
+    .guide-instruction.is-close { background: color-mix(in srgb, var(--accent) 84%, rgba(18,20,18,.72)); }
+    .guide-instruction.is-unavailable { background: rgba(55, 55, 52, .78); }
+    .guide-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+    .guide-switch-copy { min-width: 0; display: grid; gap: 2px; }
+    .guide-switch-copy strong { font-size: 12px; }
+    .guide-switch-copy span { color: var(--muted); font-size: 10px; }
+    .switch-control { position: relative; display: inline-flex; flex: 0 0 auto; align-items: center; }
+    .switch-control input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch-track { width: 44px; height: 25px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface-muted); padding: 2px; cursor: pointer; transition: background .16s ease, border-color .16s ease; }
+    .switch-track::after { content: ""; display: block; width: 19px; height: 19px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.2); transition: transform .16s ease; }
+    .switch-control input:checked + .switch-track { background: var(--accent); border-color: var(--accent); }
+    .switch-control input:checked + .switch-track::after { transform: translateX(19px); }
+    .switch-control input:focus-visible + .switch-track { outline: 3px solid color-mix(in srgb, var(--focus) 58%, transparent); outline-offset: 2px; }
+    .settings-guide { grid-column: 1 / -1; padding-top: 11px; border-top: 1px solid var(--line); display: grid; gap: 10px; }
+    .settings-subdivider { height: 1px; background: var(--line); }
+    .settings-actions { align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .timer-control { position: relative; min-width: 0; display: grid; }
+    .timer-popover {
+      position: absolute; z-index: 20; right: 0; bottom: calc(100% + 8px); min-width: 150px; padding: 6px;
+      border: 1px solid var(--line); border-radius: 13px; background: var(--surface); box-shadow: var(--shadow-md);
+    }
+    .timer-option { width: 100%; min-height: 38px; padding: 7px 10px; border: 0; border-radius: 9px; background: transparent; text-align: left; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .timer-option:hover, .timer-option[aria-checked="true"] { background: var(--accent-soft); color: var(--accent); }
+    .countdown-overlay { position: absolute; z-index: 9; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.18); pointer-events: none; }
+    .countdown-overlay[hidden] { display: none; }
+    .countdown-number { width: 108px; height: 108px; display: grid; place-items: center; border-radius: 50%; background: rgba(18,20,18,.7); color: #fff; font-size: 52px; font-weight: 800; line-height: 1; box-shadow: 0 5px 24px rgba(0,0,0,.25); backdrop-filter: blur(8px); }
+    .countdown-cancel { position: absolute; z-index: 10; left: 50%; bottom: 68px; transform: translateX(-50%); min-height: 40px; padding: 8px 14px; border: 1px solid rgba(255,255,255,.35); border-radius: 999px; background: rgba(18,20,18,.72); color: #fff; font-weight: 750; cursor: pointer; }
+    .export-actions { display: grid; gap: 9px; }
+    .export-divider { height: 1px; background: var(--line); margin: 2px 0; }
+    .comment-field { display: grid; gap: 6px; }
+    .comment-field textarea { width: 100%; min-height: 74px; max-height: 150px; resize: vertical; padding: 10px 11px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); }
+    .html-export-note { margin: 0; color: var(--muted); font-size: 11px; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 18px; }
+    @media (max-width: 680px) {
+      .guide-instruction { bottom: 9px; min-height: 42px; padding: 7px 10px; }
+      .guide-instruction strong { font-size: 12px; }
+      .settings-guide { padding-top: 9px; }
+      .countdown-cancel { bottom: 58px; }
+    }
+    @media (max-width: 380px) {
+      .brand-name { max-width: 150px; }
+      .page-intro h2 { font-size: 20px; }
+      .shoot-dock { grid-template-columns: 1fr 88px 1fr; padding-inline: 6px; }
+      .dock-action span { font-size: 9px; }
+    }
+    @media (orientation: landscape) and (max-height: 560px) and (max-width: 980px) {
+      body.camera-mode { padding-bottom: 0; }
+      .app-header { position: relative; }
+      .app-header-inner { min-height: 54px; padding-block: 7px; }
+      .main { padding-top: 8px; }
+      .camera-toolbar { margin-bottom: 6px; }
+      .camera-stage { width: calc(100% - 104px); max-height: calc(100dvh - 86px); min-height: 220px; }
+      .overlay-settings { width: calc(100% - 104px); }
+      .shoot-dock {
+        position: fixed; z-index: 80; top: 62px; right: 6px; bottom: 6px; left: auto; width: 92px; height: auto;
+        grid-template-columns: 1fr; grid-template-rows: 1fr 96px 1fr; border: 1px solid var(--line); border-radius: 16px;
+        padding: 6px; background: rgba(255,255,255,.95); box-shadow: var(--shadow-md);
+      }
+      .shutter-button { width: 60px; height: 60px; }
+      .stage-center-hint { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="brand" aria-label="Photo Re-Enactor">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect x="14" y="18" width="29" height="25" rx="4" stroke="currentColor" stroke-width="3.5"/>
+            <rect x="21" y="13" width="29" height="25" rx="4" stroke="currentColor" stroke-width="3.5" opacity=".8"/>
+            <path d="M46 39v12M40 45h12" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="46" cy="45" r="8" stroke="currentColor" stroke-width="2.5" opacity=".9"/>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <h1 class="brand-name"><span id="headerAppName">同じ構図で撮る</span><span class="version-badge" id="versionBadge">v1.0.0</span></h1>
+          <p class="brand-meta" data-i18n="brandMeta">写真を重ねて構図を合わせる · 完全ローカル処理</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="language-button" id="languageButton" type="button" aria-label="英語に切り替え">EN</button>
+        <button class="header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 3.8 1.95c-.9.62-1.5 1.08-1.5 2.05"/><path d="M12 17h.01"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="page-intro" id="pageIntro" aria-labelledby="introTitle">
+      <div>
+        <h2 id="introTitle" data-i18n="introTitle">同じ構図で、もう一度撮る</h2>
+        <p data-i18n="introBody">昔の写真やBefore写真をカメラ映像へ重ねて、できるだけ同じ構図で撮影できます。</p>
+      </div>
+      <div class="local-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span data-i18n="localBadge">完全ローカル処理</span>
+      </div>
+    </section>
+
+    <!-- APP:BEGIN -->
+    <section id="emptyScreen" class="card start-card" aria-labelledby="chooseTitle">
+      <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-describedby="dropDescription">
+        <div class="drop-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.2-2.2L20 18"/></svg>
+        </div>
+        <div>
+          <h3 class="drop-title" id="chooseTitle" data-i18n="chooseTitle">同じ構図で撮り直したい写真を選んでください</h3>
+          <p class="drop-body" id="dropDescription" data-i18n="chooseBody">写真を選ぶだけではカメラを起動しません。選んだ写真を確認してから撮影を始められます。</p>
+        </div>
+        <button class="button primary" id="chooseButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h6l2 2h8v9H4z"/><path d="M12 12v4m-2-2h4"/></svg>
+          <span data-i18n="chooseButton">元写真を選ぶ</span>
+        </button>
+        <span class="format-note" data-i18n="formats">JPEG / PNG / WebP · 最大50 MB</span>
+      </div>
+      <div class="privacy-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span data-i18n="choosePrivacy">写真はこの端末内だけで処理します。</span>
+      </div>
+    </section>
+
+    <section id="readyScreen" class="ready-grid" hidden aria-labelledby="readyTitle">
+      <article class="card preview-card">
+        <div class="reference-preview-wrap"><img id="referencePreview" alt=""></div>
+        <div class="preview-caption">
+          <div class="reference-name" id="referenceName"></div>
+          <div class="reference-meta" id="referenceMeta"></div>
+        </div>
+      </article>
+      <aside class="card ready-actions">
+        <span class="step-label" data-i18n="step2">STEP 2</span>
+        <h3 id="readyTitle" data-i18n="readyTitle">元写真を確認しました</h3>
+        <p data-i18n="readyBody">この写真をライブ映像へ重ねて構図を合わせます。カメラ映像は外部へ送信されません。</p>
+        <div class="error-box" id="cameraError" role="alert">
+          <strong id="cameraErrorTitle"></strong>
+          <span id="cameraErrorMessage"></span>
+          <details class="error-detail" id="cameraErrorDetails" hidden><summary data-i18n="details">詳細</summary><div id="cameraErrorDetailText"></div></details>
+        </div>
+        <button class="button primary" id="startCameraButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.3-2h7.4L17 8h3v10H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          <span data-i18n="startCamera">カメラを開始</span>
+        </button>
+        <button class="button" id="changeReferenceButton" type="button" data-i18n="changeReference">別の写真を選ぶ</button>
+        <div class="privacy-line">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V8a4 4 0 0 1 8 0v2"/><rect x="5" y="10" width="14" height="10" rx="2"/></svg>
+          <span data-i18n="permissionNote">「カメラを開始」を押したときだけカメラ権限を求めます。</span>
+        </div>
+      </aside>
+    </section>
+
+    <section id="cameraScreen" class="camera-card" hidden aria-labelledby="cameraTitle">
+      <div class="camera-toolbar">
+        <button class="button quiet" id="backFromCameraButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+          <span data-i18n="backToReference">元写真へ戻る</span>
+        </button>
+        <span class="camera-hint" id="cameraTitle" data-i18n="cameraHint">元写真をドラッグ・ピンチして構図を合わせます</span>
+        <span></span>
+      </div>
+      <div class="camera-stage" id="cameraStage">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <img class="ghost-overlay" id="ghostOverlay" alt="" draggable="false">
+        <img class="outline-overlay" id="outlineOverlay" alt="" draggable="false" hidden>
+        <div class="split-divider" id="splitDivider" hidden aria-hidden="true"></div>
+        <div class="stage-shade"></div>
+        <div class="stage-top">
+          <div class="stage-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="m5 17 4-4 3 3 2-2 5 4"/></svg>
+            <span id="stageReferenceName"></span>
+          </div>
+          <div class="stage-pill guide-score-pill is-muted" id="guideScorePill"><span id="guideScoreText" data-i18n="guidePreparingShort">構図を確認中…</span></div>
+        </div>
+        <div class="guide-instruction" id="guideInstruction" role="status" aria-live="polite">
+          <strong id="guideInstructionText" data-i18n="guidePreparing">構図を確認しています…</strong>
+          <span id="guideInstructionSub" data-i18n="gestureHint">1本指で移動 · 2本指で拡大・回転</span>
+        </div>
+        <div class="countdown-overlay" id="countdownOverlay" hidden aria-live="assertive"><div class="countdown-number" id="countdownNumber">3</div></div>
+        <button class="countdown-cancel" id="countdownCancelButton" type="button" hidden data-i18n="cancelTimer">タイマーをキャンセル</button>
+        <div class="capture-flash"></div>
+      </div>
+
+      <details class="overlay-settings" id="overlaySettings">
+        <summary>
+          <span class="summary-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h6M14 17h6"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="12" cy="17" r="2"/></svg>
+            <span data-i18n="adjustOverlay">重ね方を調整</span>
+          </span>
+          <span class="summary-value" id="overlaySummary">50% · 100% · 0°</span>
+        </summary>
+        <div class="settings-grid">
+          <div class="overlay-mode-field">
+            <span class="overlay-mode-label" data-i18n="overlayMode">重ね方</span>
+            <div class="overlay-mode-options" role="group" data-i18n-aria-label="overlayMode">
+              <button class="overlay-mode-button" type="button" data-overlay-mode="ghost" aria-pressed="true">Ghost</button>
+              <button class="overlay-mode-button" type="button" data-overlay-mode="outline" aria-pressed="false">Outline</button>
+              <button class="overlay-mode-button" type="button" data-overlay-mode="blink" aria-pressed="false">Blink</button>
+              <button class="overlay-mode-button" type="button" data-overlay-mode="split" aria-pressed="false">Split</button>
+            </div>
+            <div class="overlay-mode-hint" id="overlayModeHint" data-i18n="overlayModeGhostHint">元写真を半透明で重ねます</div>
+          </div>
+          <div class="range-field split-position-field" id="splitPositionField" hidden>
+            <div class="range-head"><label for="splitRange" data-i18n="splitPosition">境界位置</label><span class="range-value" id="splitValue">50%</span></div>
+            <input id="splitRange" type="range" min="15" max="85" step="1" value="50">
+          </div>
+          <div class="range-field">
+            <div class="range-head"><label for="opacityRange" data-i18n="opacity">透明度</label><span class="range-value" id="opacityValue">50%</span></div>
+            <input id="opacityRange" type="range" min="20" max="80" step="1" value="50">
+          </div>
+          <div class="range-field">
+            <div class="range-head"><label for="scaleRange" data-i18n="scale">元写真の大きさ</label><span class="range-value" id="scaleValue">100%</span></div>
+            <input id="scaleRange" type="range" min="50" max="200" step="1" value="100">
+          </div>
+          <div class="range-field">
+            <div class="range-head"><label for="rotationRange" data-i18n="rotation">元写真の傾き</label><span class="range-value" id="rotationValue">0°</span></div>
+            <input id="rotationRange" type="range" min="-45" max="45" step="1" value="0">
+          </div>
+          <div class="settings-guide">
+            <div class="guide-switch-row">
+              <div class="guide-switch-copy"><strong data-i18n="manualAdjust">元写真を手動調整</strong><span data-i18n="manualAdjustHint">必要なときだけONにしてドラッグ・ピンチします</span></div>
+              <label class="switch-control">
+                <input id="manualAdjustToggle" type="checkbox" data-i18n-aria-label="manualAdjust">
+                <span class="switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="settings-subdivider" aria-hidden="true"></div>
+            <div class="guide-switch-row">
+              <div class="guide-switch-copy"><strong data-i18n="guideToggle">構図ガイド</strong><span data-i18n="guideToggleHint">元写真とのずれを目安として案内します</span></div>
+              <label class="switch-control">
+                <input id="guideToggle" type="checkbox" checked data-i18n-aria-label="guideToggle">
+                <span class="switch-track" aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-actions">
+            <span class="summary-value" data-i18n="guideCaution">一致度は構図の近さの目安です</span>
+            <button class="button" id="resetOverlayButton" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.3 5.7"/><path d="M4 5v6h6"/></svg>
+              <span data-i18n="resetOverlay">位置をリセット</span>
+            </button>
+          </div>
+        </div>
+      </details>
+
+      <div class="shoot-dock" aria-label="Camera actions">
+        <button class="dock-action" id="switchCameraButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.2-2h7.6L17 8h3v10H4z"/><path d="M9 13a3 3 0 0 0 5.3 1.9M15 12a3 3 0 0 0-5.3-1.9"/><path d="m14 9 .3 1.8L16 10m-6 7-.3-1.8L8 16"/></svg>
+          <span data-i18n="switchCamera">カメラ切替</span>
+        </button>
+        <div class="shutter-wrap">
+          <button class="shutter-button" id="shutterButton" type="button" data-i18n-aria-label="takePhoto" aria-label="撮影"><span class="sr-only" data-i18n="takePhoto">撮影</span></button>
+          <span data-i18n="takePhoto">撮影</span>
+        </div>
+        <div class="timer-control">
+          <button class="dock-action" id="timerButton" type="button" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M12 6V3m-3 0h6m-3 10 3-2"/></svg>
+            <span id="timerButtonLabel" data-i18n="timerOff">タイマー OFF</span>
+          </button>
+          <div class="timer-popover" id="timerPopover" hidden role="radiogroup" data-i18n-aria-label="timerLabel">
+            <button class="timer-option" type="button" data-timer="0" role="radio" aria-checked="true" data-i18n="timerOff">タイマー OFF</button>
+            <button class="timer-option" type="button" data-timer="3" role="radio" aria-checked="false">3秒</button>
+            <button class="timer-option" type="button" data-timer="5" role="radio" aria-checked="false">5秒</button>
+            <button class="timer-option" type="button" data-timer="10" role="radio" aria-checked="false">10秒</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="result-grid" hidden aria-labelledby="resultTitle">
+      <article class="card compare-card">
+        <div class="compare-head">
+          <div><h3 id="resultTitle" data-i18n="resultTitle">撮影できました</h3><p data-i18n="resultBody">画像上の境界を動かして元写真と新しい写真を比較できます。</p></div>
+        </div>
+        <div class="compare-frame" id="compareFrame" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" data-i18n-aria-label="compareSlider" aria-label="Before / After比較">
+          <img id="afterImage" alt="">
+          <img class="compare-before" id="beforeImage" alt="">
+          <span class="compare-label before">Before</span>
+          <span class="compare-label after">After</span>
+          <div class="compare-divider"></div>
+          <div class="compare-handle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3m8-6 3 3-3 3"/></svg></div>
+        </div>
+        <p class="compare-drag-hint" data-i18n="compareDragHint">画像上のハンドルを左右に動かして比較できます。</p>
+      </article>
+      <aside class="card result-actions">
+        <span class="step-label" data-i18n="step5">STEP 5</span>
+        <h3 data-i18n="saveTitle">新しい写真を保存</h3>
+        <p data-i18n="saveBody">写真は自動保存されません。必要な写真だけ端末へ保存してください。</p>
+        <label class="export-field" for="outputFilename">
+          <span class="export-label" data-i18n="outputFilename">出力ファイル名</span>
+          <span class="filename-control">
+            <input class="filename-input" id="outputFilename" type="text" maxlength="120" autocomplete="off" spellcheck="false" aria-describedby="outputFilenameHint">
+            <span class="filename-extension">.jpg</span>
+          </span>
+          <span class="sr-only" id="outputFilenameHint" data-i18n="outputFilenameHint">拡張子は自動で .jpg が付きます</span>
+        </label>
+        <div class="export-actions">
+          <button class="button primary" id="savePhotoButton" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4"/><path d="M5 19h14"/></svg>
+            <span data-i18n="savePhoto">新しい写真を保存</span>
+          </button>
+          <button class="button" id="saveCompareImageButton" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16M6 15l2-2 2 2m4 0 2-2 2 2"/></svg>
+            <span data-i18n="saveCompareImage">比較画像を保存</span>
+          </button>
+          <button class="button" id="saveCompareHtmlButton" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v5h5M8 13l2-2m-2 2 2 2m6-4-2 2 2 2"/></svg>
+            <span data-i18n="saveCompareHtml">比較HTMLを保存</span>
+          </button>
+        </div>
+        <div class="export-divider"></div>
+        <label class="comment-field" for="comparisonComment"><span class="export-label" data-i18n="comparisonComment">比較HTMLのコメント（任意）</span><textarea id="comparisonComment" maxlength="500" data-i18n-placeholder="comparisonCommentPlaceholder" placeholder="例：リフォーム後 2026年9月"></textarea></label>
+        <button class="button" id="retakeButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.2-2h7.6L17 8h3v10H4z"/><path d="M8 14a4 4 0 0 0 7 2M16 12a4 4 0 0 0-7-2"/></svg>
+          <span data-i18n="retake">撮り直す</span>
+        </button>
+        <button class="button quiet" id="newReferenceFromResultButton" type="button" data-i18n="newReference">別の元写真にする</button>
+      </aside>
+    </section>
+
+    <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden>
+    <canvas id="captureCanvas" hidden></canvas>
+    <canvas id="beforeCanvas" hidden></canvas>
+    <canvas id="analysisCanvas" width="128" height="96" hidden></canvas>
+    <canvas id="referenceAnalysisCanvas" width="128" height="96" hidden></canvas>
+    <canvas id="comparisonCanvas" hidden></canvas>
+    <!-- APP:END -->
+  </main>
+
+  <footer><span id="footerName">Photo Re-Enactor</span> · MIT License · <span data-i18n="footer">写真やカメラ映像を外部へ送信しません</span></footer>
+
+  <div class="app-toast" id="appToast" role="status" aria-live="polite" aria-atomic="true">
+    <span class="app-toast-message" id="appToastMessage"></span>
+    <button class="app-toast-action" id="appToastAction" type="button" hidden></button>
+  </div>
+
+  <dialog id="helpDialog" aria-labelledby="helpTitle">
+    <div class="dialog-body">
+      <div class="dialog-head">
+        <h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2>
+        <button class="dialog-close" id="closeHelpButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <!-- APP:HELP:BEGIN -->
+      <h3 data-i18n="helpBasicsTitle">基本操作</h3>
+      <ol>
+        <li data-i18n="helpStep1">同じ構図で撮り直したい元写真を選びます。この時点ではカメラを起動しません。</li>
+        <li data-i18n="helpStep2">元写真を確認して「カメラを開始」を押します。ライブ映像に元写真が半透明で重なります。</li>
+        <li data-i18n="helpStep3">元写真を1本指で移動、2本指で拡大・回転して構図を合わせます。PCではドラッグとマウスホイールも使えます。</li>
+        <li data-i18n="helpStep4">構図が合ったら撮影します。撮影後はBefore / Afterを比較して、新しい写真をJPEGで保存できます。</li>
+      </ol>
+      <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
+      <p data-i18n="helpPrivacyBody">元写真、カメラ映像、撮影画像はブラウザ内だけで処理します。このアプリから外部サーバーへ送信せず、写真をブラウザ内へ自動保存もしません。</p>
+      <h3 data-i18n="helpNotesTitle">注意事項</h3>
+      <ul>
+        <li data-i18n="helpNoteCamera">カメラはブラウザのセキュリティ制約により、HTTPSまたはlocalhostでの利用が基本です。単一HTMLを直接開いた場合はカメラを利用できないことがあります。</li>
+        <li data-i18n="helpNoteManual">v0.1では自動構図解析はまだありません。元写真の重ね表示と手動調整で構図を合わせます。</li>
+        <li data-i18n="helpNoteSave">撮影画像は自動保存されません。必要な写真は撮影後に「新しい写真を保存」を押してください。</li>
+      </ul>
+      <p class="dialog-note" data-i18n="helpOffline">実行時の外部通信はありません。写真とカメラ映像は完全ローカル処理です。</p>
+      <!-- APP:HELP:END -->
+    </div>
+  </dialog>
+
+  <dialog id="exportHtmlDialog" aria-labelledby="exportHtmlTitle">
+    <div class="dialog-body">
+      <div class="dialog-head">
+        <h2 id="exportHtmlTitle" data-i18n="exportHtmlTitle">比較HTMLを保存しますか？</h2>
+        <button class="dialog-close" id="closeExportHtmlButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <p data-i18n="exportHtmlPrivacy">比較HTMLには元写真と新しい写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。</p>
+      <p class="dialog-note" data-i18n="exportHtmlOffline">HTMLは外部通信なしで単体表示できます。</p>
+      <div class="confirm-actions"><button class="button" id="cancelExportHtmlButton" type="button" data-i18n="cancel">キャンセル</button><button class="button primary" id="confirmExportHtmlButton" type="button" data-i18n="saveCompareHtml">比較HTMLを保存</button></div>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Photo Re-Enactor","nameJa":"同じ構図で撮る","slug":"photo-re-enactor","version":"1.0.0","description":"Use a reference photo as a ghost overlay to retake a scene from nearly the same composition, entirely in the browser.","descriptionJa":"元写真をカメラ映像へ重ね、できるだけ同じ構図で撮り直すためのブラウザツールです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-photo-re-enactor"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":8,"selfExtractWarningMb":4}}};
+      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-09-01T06:55:50.3958499Z","app":{"name":"Photo Re-Enactor","slug":"photo-re-enactor","version":"1.0.0"},"dependencies":[]};
+      // Asset payloads are Base64 exactly once. The JSON bundle itself is embedded directly.
+      const assetBundle = {"schemaVersion":2,"dependencies":{}};
+      const blobUrls = new Set();
+      const assetByteCache = new Map();
+
+      function decodeBase64Bytes(base64) {
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+        return bytes;
+      }
+      function getAsset(dependencyId, assetKey) {
+        const asset = assetBundle.dependencies?.[dependencyId]?.assets?.[assetKey];
+        if (!asset) throw new Error(`Embedded asset not found: ${dependencyId}/${assetKey}`);
+        return asset;
+      }
+      async function inflateAsset(asset) {
+        const stored = decodeBase64Bytes(asset.base64);
+        if (!asset.compression || asset.compression === 'none') return stored;
+        if (asset.compression !== 'gzip') throw new Error(`Unsupported embedded asset compression: ${asset.compression}`);
+        if (typeof DecompressionStream !== 'function') throw new Error('This browser cannot expand gzip-compressed embedded assets.');
+        const stream = new Blob([stored]).stream().pipeThrough(new DecompressionStream('gzip'));
+        const expanded = new Uint8Array(await new Response(stream).arrayBuffer());
+        if (Number.isFinite(asset.originalBytes) && expanded.byteLength !== asset.originalBytes) throw new Error('Embedded gzip asset size mismatch.');
+        return expanded;
+      }
+      window.StandaloneAssets = Object.freeze({
+        manifest: BUILD_MANIFEST,
+        list() { return Object.entries(assetBundle.dependencies || {}).flatMap(([dependencyId, dependency]) => Object.keys(dependency.assets || {}).map(assetKey => `${dependencyId}/${assetKey}`)); },
+        has(dependencyId, assetKey) { return Boolean(assetBundle.dependencies?.[dependencyId]?.assets?.[assetKey]); },
+        bytes(dependencyId, assetKey) {
+          const asset = getAsset(dependencyId, assetKey);
+          if (asset.compression && asset.compression !== 'none') throw new Error(`Embedded asset ${dependencyId}/${assetKey} is gzip-compressed; use await StandaloneAssets.bytesAsync().`);
+          return decodeBase64Bytes(asset.base64);
+        },
+        async bytesAsync(dependencyId, assetKey) {
+          const cacheKey = `${dependencyId}/${assetKey}`;
+          if (!assetByteCache.has(cacheKey)) assetByteCache.set(cacheKey, inflateAsset(getAsset(dependencyId, assetKey)));
+          return new Uint8Array(await assetByteCache.get(cacheKey));
+        },
+        text(dependencyId, assetKey) { return new TextDecoder().decode(this.bytes(dependencyId, assetKey)); },
+        async textAsync(dependencyId, assetKey) { return new TextDecoder().decode(await this.bytesAsync(dependencyId, assetKey)); },
+        blobUrl(dependencyId, assetKey) {
+          const asset = getAsset(dependencyId, assetKey);
+          const url = URL.createObjectURL(new Blob([this.bytes(dependencyId, assetKey)], { type: asset.mime || 'application/octet-stream' }));
+          blobUrls.add(url); return url;
+        },
+        async blobUrlAsync(dependencyId, assetKey) {
+          const asset = getAsset(dependencyId, assetKey);
+          const url = URL.createObjectURL(new Blob([await this.bytesAsync(dependencyId, assetKey)], { type: asset.mime || 'application/octet-stream' }));
+          blobUrls.add(url); return url;
+        }
+      });
+
+      const $ = selector => document.querySelector(selector);
+      const translations = {
+        ja: {
+          brandMeta: '写真を重ねて構図を合わせる · 完全ローカル処理', introTitle: '同じ構図で、もう一度撮る', introBody: '昔の写真やBefore写真をカメラ映像へ重ねて、できるだけ同じ構図で撮影できます。', localBadge: '完全ローカル処理',
+          chooseTitle: '同じ構図で撮り直したい写真を選んでください', chooseBody: '写真を選ぶだけではカメラを起動しません。選んだ写真を確認してから撮影を始められます。', chooseButton: '元写真を選ぶ', formats: 'JPEG / PNG / WebP · 最大50 MB', choosePrivacy: '写真はこの端末内だけで処理します。',
+          step2: 'STEP 2', readyTitle: '元写真を確認しました', readyBody: 'この写真をライブ映像へ重ねて構図を合わせます。カメラ映像は外部へ送信されません。', startCamera: 'カメラを開始', startingCamera: 'カメラを準備中…', changeReference: '別の写真を選ぶ', permissionNote: '「カメラを開始」を押したときだけカメラ権限を求めます。', details: '詳細',
+          backToReference: '元写真へ戻る', cameraHint: 'ガイドに合わせてカメラを動かします', gestureHint: '必要なら元写真も手動調整できます', manualAdjust: '元写真を手動調整', manualAdjustHint: '必要なときだけONにしてドラッグ・ピンチします', manualAdjustActive: '元写真を調整中', manualAdjustActiveSub: '調整後にOFFにすると構図ガイドを再開します', adjustOverlay: '重ね方を調整', overlayMode: '表示モード', overlayModeGhostHint: '元写真を半透明で重ねます', overlayModeOutlineHint: '元写真の主な輪郭だけを表示します', overlayModeBlinkHint: '元写真とライブ映像をゆっくり交互に表示します', overlayModeBlinkReducedHint: '動きを減らす設定が有効なため、点滅を停止しています', overlayModeSplitHint: '元写真とライブ映像を境界で見比べます', splitPosition: '境界位置', opacity: '透明度', scale: '元写真の大きさ', rotation: '元写真の傾き', resetOverlay: '位置をリセット', switchCamera: 'カメラ切替', takePhoto: '撮影',
+          guideToggle: '構図ガイド', guideToggleHint: '元写真とのずれを目安として案内します', guideCaution: '一致度は構図の近さの目安です', guidePreparing: '構図を確認しています…', guidePreparingShort: '構図を確認中…', guideOff: '構図ガイドはOFFです', guideUnavailable: '自動で構図を確認できません', guideUnavailableSub: '重ね表示を使って手動で合わせられます', guideClose: 'ほぼ同じ構図です', guideLeft: 'カメラを少し左へ', guideRight: 'カメラを少し右へ', guideUp: 'カメラを少し上へ', guideDown: 'カメラを少し下へ', guideCloser: '少し近づいてください', guideFarther: '少し離れてください', guideTiltLeft: 'カメラを左へ傾けてください', guideTiltRight: 'カメラを右へ傾けてください', guideScore: '構図の一致 {score}%',
+          timerLabel: '撮影タイマー', timerOff: 'タイマー OFF', timerSeconds: '{seconds}秒', cancelTimer: 'タイマーをキャンセル', timerCancelled: 'タイマーをキャンセルしました',
+          resultTitle: '撮影できました', resultBody: '画像上の境界を動かして元写真と新しい写真を比較できます。', compareSlider: 'Before / After比較', compareDragHint: '画像上のハンドルを左右に動かして比較できます。', step5: 'STEP 5', saveTitle: '撮影結果を保存', saveBody: '写真は自動保存されません。必要な形式だけ端末へ保存してください。', outputFilename: '出力ファイル名', outputFilenameHint: '拡張子は保存形式に応じて自動で付きます', savePhoto: '新しい写真を保存', saveCompareImage: '比較画像を保存', saveCompareHtml: '比較HTMLを保存', comparisonComment: '比較HTMLのコメント（任意）', comparisonCommentPlaceholder: '例：リフォーム後 2026年9月', retake: '撮り直す', newReference: '別の元写真にする', comparisonSaved: '比較画像を保存しました', htmlSaved: '比較HTMLを保存しました',
+          exportHtmlTitle: '比較HTMLを保存しますか？', exportHtmlPrivacy: '比較HTMLには元写真と新しい写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。', exportHtmlOffline: 'HTMLは外部通信なしで単体表示できます。', cancel: 'キャンセル',
+          helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: '同じ構図で撮り直したい元写真を選びます。この時点ではカメラを起動しません。', helpStep2: '元写真を確認して「カメラを開始」を押します。Ghost / Outline / Blink / Splitから見やすい重ね方を選べます。', helpStep3: '構図ガイドが使える場面では、左右・上下・距離・傾きのうち現在もっとも大きいずれを1つ案内します。ガイドをOFFにして手動だけでも撮影できます。', helpStep4: '必要ならタイマーを使って撮影します。撮影後はBefore / Afterを比較し、新しい写真・比較画像・比較HTMLを保存できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '元写真、カメラ映像、撮影画像はブラウザ内だけで処理します。このアプリから外部サーバーへ送信せず、写真をブラウザ内へ自動保存もしません。', helpNotesTitle: '注意事項', helpNoteCamera: 'カメラはブラウザのセキュリティ制約により、HTTPSまたはlocalhostでの利用が基本です。単一HTMLを直接開いた場合はカメラを利用できないことがあります。', helpNoteManual: '自動ガイドは画像の特徴が少ない場面、暗所、ぼけ、大きく変化した場面などでは利用できないことがあります。その場合も重ね表示で手動撮影できます。', helpNoteSave: '構図の一致は写真品質の評価ではなく、元写真との構図の近さの目安です。撮影をブロックする条件には使いません。', helpOffline: '実行時の外部通信はありません。写真とカメラ映像は完全ローカル処理です。',
+          footer: '写真やカメラ映像を外部へ送信しません', invalidFileTitle: '写真を読み込めませんでした', invalidType: 'JPEG / PNG / WebP の写真を選んでください。', tooLarge: '50 MB以下の写真を選んでください。', decodeFailed: '写真を表示できませんでした。ファイルが破損している可能性があります。', cameraUnavailableTitle: 'カメラを使用できませんでした', cameraPermission: 'ブラウザのカメラ許可を確認してください。元写真はそのまま確認できます。', cameraMissing: '利用できるカメラが見つかりませんでした。', cameraSecure: 'この環境ではカメラ撮影を利用できません。HTTPSまたはlocalhostで開いてください。', cameraGeneric: 'カメラを開始できませんでした。ブラウザまたは端末のカメラ設定を確認してください。', cameraSwitchFailed: 'カメラを切り替えられませんでした。元のカメラへ戻しました。', captureFailed: '撮影画像を作成できませんでした。もう一度撮影してください。', saved: '写真を保存しました', overlayReset: '元写真の位置をリセットしました', cameraOnlyOne: 'この端末では切り替え可能な別のカメラを確認できませんでした。'
+        },
+        en: {
+          brandMeta: 'Reference overlay · Fully local processing', introTitle: 'Retake it from the same composition', introBody: 'Overlay an old or Before photo on the live camera and line up the scene before taking a new photo.', localBadge: 'Fully local processing',
+          chooseTitle: 'Choose the photo you want to recreate', chooseBody: 'Choosing a photo does not start the camera. You can review the reference first, then start shooting.', chooseButton: 'Choose reference photo', formats: 'JPEG / PNG / WebP · up to 50 MB', choosePrivacy: 'Your photo is processed only on this device.',
+          step2: 'STEP 2', readyTitle: 'Reference photo ready', readyBody: 'This photo will be placed over the live view so you can line up the composition. Camera video is not sent outside the browser.', startCamera: 'Start camera', startingCamera: 'Starting camera…', changeReference: 'Choose another photo', permissionNote: 'Camera permission is requested only after you press Start camera.', details: 'Details',
+          backToReference: 'Back to reference', cameraHint: 'Move the camera to follow the composition guide', gestureHint: 'You can manually adjust the reference if needed', manualAdjust: 'Adjust reference manually', manualAdjustHint: 'Turn this on only when you need to drag or pinch the reference', manualAdjustActive: 'Adjusting reference', manualAdjustActiveSub: 'Turn this off to resume composition guidance', adjustOverlay: 'Adjust overlay', overlayMode: 'Overlay mode', overlayModeGhostHint: 'Shows the reference as a transparent overlay', overlayModeOutlineHint: 'Shows the main reference edges only', overlayModeBlinkHint: 'Slowly alternates the reference and live view', overlayModeBlinkReducedHint: 'Blink is paused because reduced-motion is enabled', overlayModeSplitHint: 'Compares the reference and live view across a movable boundary', splitPosition: 'Split position', opacity: 'Opacity', scale: 'Reference size', rotation: 'Reference tilt', resetOverlay: 'Reset position', switchCamera: 'Switch camera', takePhoto: 'Take photo',
+          guideToggle: 'Composition guide', guideToggleHint: 'Uses the reference to suggest the largest current offset', guideCaution: 'The match score is only a composition estimate', guidePreparing: 'Checking composition…', guidePreparingShort: 'Checking…', guideOff: 'Composition guide is off', guideUnavailable: 'Automatic composition check is unavailable', guideUnavailableSub: 'You can still line up the scene with the overlay', guideClose: 'Composition looks very close', guideLeft: 'Move the camera a little to the left', guideRight: 'Move the camera a little to the right', guideUp: 'Move the camera a little up', guideDown: 'Move the camera a little down', guideCloser: 'Move a little closer', guideFarther: 'Move a little farther away', guideTiltLeft: 'Tilt the camera a little to the left', guideTiltRight: 'Tilt the camera a little to the right', guideScore: 'Composition match {score}%',
+          timerLabel: 'Capture timer', timerOff: 'Timer OFF', timerSeconds: '{seconds}s', cancelTimer: 'Cancel timer', timerCancelled: 'Timer cancelled',
+          resultTitle: 'Photo captured', resultBody: 'Drag the divider on the image to compare the reference with the new photo.', compareSlider: 'Before / After comparison', compareDragHint: 'Drag the handle on the image left or right to compare.', step5: 'STEP 5', saveTitle: 'Save capture results', saveBody: 'Nothing is saved automatically. Save only the formats you want to keep.', outputFilename: 'Output filename', outputFilenameHint: 'The extension is added automatically for each format', savePhoto: 'Save new photo', saveCompareImage: 'Save comparison image', saveCompareHtml: 'Save comparison HTML', comparisonComment: 'Comparison HTML comment (optional)', comparisonCommentPlaceholder: 'e.g. After renovation · Sep 2026', retake: 'Retake', newReference: 'Use another reference', comparisonSaved: 'Comparison image saved', htmlSaved: 'Comparison HTML saved',
+          exportHtmlTitle: 'Save comparison HTML?', exportHtmlPrivacy: 'The comparison HTML embeds both the reference and new photo. Sharing the HTML also shares those photos.', exportHtmlOffline: 'The HTML opens by itself without external network access.', cancel: 'Cancel',
+          helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Choose the reference photo you want to recreate. The camera does not start yet.', helpStep2: 'Review the reference and press Start camera. Choose Ghost, Outline, Blink, or Split depending on which view is easiest to line up.', helpStep3: 'When automatic guidance is available, it shows the single largest offset among left/right, up/down, distance, and tilt. You can turn the guide off and shoot manually at any time.', helpStep4: 'Use a timer if needed, then take the photo. After capture, compare Before / After and save the new photo, a comparison image, or a standalone comparison HTML.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Reference photos, camera video, and captured photos are processed only in the browser. This app does not send them to an external server or automatically store photos in browser storage.', helpNotesTitle: 'Notes', helpNoteCamera: 'Browser security rules normally require HTTPS or localhost for camera access. Camera capture may be unavailable when the standalone HTML is opened directly.', helpNoteManual: 'Automatic guidance may be unavailable for low-detail scenes, darkness, blur, or scenes that have changed substantially. Manual overlay shooting remains available.', helpNoteSave: 'The composition match is only an estimate of similarity to the reference composition, not a photo quality score, and it never blocks capture.', helpOffline: 'There are no runtime network connections. Photos and camera video are processed fully locally.',
+          footer: 'Photos and camera video are never sent outside this app', invalidFileTitle: 'Could not load the photo', invalidType: 'Choose a JPEG, PNG, or WebP photo.', tooLarge: 'Choose a photo smaller than 50 MB.', decodeFailed: 'The photo could not be displayed. The file may be damaged.', cameraUnavailableTitle: 'Could not use the camera', cameraPermission: 'Check this site’s camera permission in your browser. The reference photo is still available.', cameraMissing: 'No usable camera was found on this device.', cameraSecure: 'Camera capture is unavailable in this context. Open the app over HTTPS or localhost.', cameraGeneric: 'The camera could not start. Check your browser and device camera settings.', cameraSwitchFailed: 'Could not switch cameras. The previous camera was restored.', captureFailed: 'Could not create the captured image. Please try again.', saved: 'Photo saved', overlayReset: 'Reference position reset', cameraOnlyOne: 'No second camera is currently available to switch to.'
+        }
+      };
+
+      const state = {
+        language: 'ja', phase: 'empty', sourceGeneration: 0,
+        referenceFile: null, referenceUrl: '', referenceImage: null,
+        stream: null, facing: 'environment', cameraCount: 0,
+        transform: { tx: 0, ty: 0, scale: 1, rotation: 0, opacity: .5 },
+        capturedBlob: null, capturedUrl: '', alignedBeforeBlob: null, alignedBeforeUrl: '', captureRatio: 4 / 3, capturedAt: null,
+        pointers: new Map(), twoPointerGesture: null, onePointerLast: null, toastTimer: 0,
+        timerSeconds: 0, countdownTimer: 0, countdownActive: false,
+        overlayMode: 'ghost', splitPosition: 50, blinkTimer: 0, blinkVisible: true, outlineUrl: '',
+        guideEnabled: true, guideWorker: null, guideWorkerUrl: '', guideBusy: false, guideTimer: 0, guideGeneration: 0, guideReference: null, guideStable: null, guideFailures: 0, guideDisplayKey: null, guideCandidateKey: null, guideCandidateCount: 0,
+        manualAdjust: false,
+        comparePosition: 50, comparePointerId: null, wakeLock: null
+      };
+
+      const storageKey = `${APP_CONFIG.slug}:language`;
+      const emptyScreen = $('#emptyScreen');
+      const readyScreen = $('#readyScreen');
+      const cameraScreen = $('#cameraScreen');
+      const resultScreen = $('#resultScreen');
+      const fileInput = $('#fileInput');
+      const dropZone = $('#dropZone');
+      const referencePreview = $('#referencePreview');
+      const ghostOverlay = $('#ghostOverlay');
+      const outlineOverlay = $('#outlineOverlay');
+      const splitDivider = $('#splitDivider');
+      const splitRange = $('#splitRange');
+      const cameraVideo = $('#cameraVideo');
+      const cameraStage = $('#cameraStage');
+      const outputFilename = $('#outputFilename');
+      const shutterButton = $('#shutterButton');
+      const switchCameraButton = $('#switchCameraButton');
+      const compareFrame = $('#compareFrame');
+      const helpDialog = $('#helpDialog');
+      const exportHtmlDialog = $('#exportHtmlDialog');
+      const timerPopover = $('#timerPopover');
+      const guideToggle = $('#guideToggle');
+      const manualAdjustToggle = $('#manualAdjustToggle');
+      const analysisCanvas = $('#analysisCanvas');
+      const referenceAnalysisCanvas = $('#referenceAnalysisCanvas');
+
+      function translate(key) { return translations[state.language]?.[key] ?? translations.en[key] ?? key; }
+      function detectLanguage() {
+        try { const saved = localStorage.getItem(storageKey); if (saved === 'ja' || saved === 'en') return saved; } catch {}
+        if (APP_CONFIG.defaultLanguage === 'ja' || APP_CONFIG.defaultLanguage === 'en') return APP_CONFIG.defaultLanguage;
+        return (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en';
+      }
+      function applyLanguage() {
+        document.documentElement.lang = state.language;
+        document.querySelectorAll('[data-i18n]').forEach(element => { element.textContent = translate(element.dataset.i18n); });
+        document.querySelectorAll('[data-i18n-title]').forEach(element => { element.title = translate(element.dataset.i18nTitle); });
+        document.querySelectorAll('[data-i18n-aria-label]').forEach(element => { element.setAttribute('aria-label', translate(element.dataset.i18nAriaLabel)); });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(element => { element.setAttribute('placeholder', translate(element.dataset.i18nPlaceholder)); });
+        $('#languageButton').textContent = state.language === 'ja' ? 'EN' : '日本語';
+        $('#languageButton').setAttribute('aria-label', state.language === 'ja' ? '英語に切り替え' : 'Switch to Japanese');
+        $('#headerAppName').textContent = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
+        document.title = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
+        if (state.phase === 'starting-camera') $('#startCameraButton span').textContent = translate('startingCamera');
+        else $('#startCameraButton span').textContent = translate('startCamera');
+        updateTimerUi();
+        renderGuideState(state.guideStable);
+        renderOverlayMode();
+      }
+
+      const AppToast = (() => {
+        const root = $('#appToast'); const message = $('#appToastMessage'); const action = $('#appToastAction');
+        function hide() { root.classList.remove('is-visible'); action.hidden = true; action.onclick = null; if (state.toastTimer) clearTimeout(state.toastTimer); state.toastTimer = 0; }
+        function show({ message: text, duration = 2600, actionLabel = '', onAction = null } = {}) {
+          hide(); message.textContent = text || ''; action.hidden = !actionLabel; action.textContent = actionLabel || '';
+          if (actionLabel && typeof onAction === 'function') action.onclick = () => { onAction(); hide(); };
+          requestAnimationFrame(() => root.classList.add('is-visible'));
+          state.toastTimer = window.setTimeout(hide, duration);
+        }
+        return { show, hide };
+      })();
+      window.AppToast = AppToast;
+
+      function showScreen(name) {
+        emptyScreen.hidden = name !== 'empty'; readyScreen.hidden = name !== 'ready'; cameraScreen.hidden = name !== 'camera'; resultScreen.hidden = name !== 'result';
+        document.body.classList.toggle('camera-mode', name === 'camera');
+        $('#pageIntro').hidden = name === 'camera' || name === 'result';
+        state.phase = name;
+        window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      }
+      function formatBytes(bytes) { return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
+      function validImageType(file) { return ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name || ''); }
+      function safeRevoke(url) { if (!url) return; try { URL.revokeObjectURL(url); } catch {} }
+      function clearCapture() {
+        safeRevoke(state.capturedUrl); safeRevoke(state.alignedBeforeUrl);
+        state.capturedBlob = null; state.capturedUrl = ''; state.alignedBeforeBlob = null; state.alignedBeforeUrl = ''; state.capturedAt = null;
+        $('#afterImage').removeAttribute('src'); $('#beforeImage').removeAttribute('src');
+      }
+      async function requestScreenWakeLock() {
+        if (!('wakeLock' in navigator) || document.hidden || !state.stream || state.wakeLock) return;
+        try {
+          const lock = await navigator.wakeLock.request('screen');
+          state.wakeLock = lock;
+          lock.addEventListener('release', () => { if (state.wakeLock === lock) state.wakeLock = null; }, { once: true });
+        } catch {}
+      }
+      function releaseScreenWakeLock() {
+        const lock = state.wakeLock; state.wakeLock = null;
+        if (lock && !lock.released) lock.release().catch(() => {});
+      }
+      function captureFeedback() {
+        try { navigator.vibrate?.(35); } catch {}
+      }
+      function stopCameraStream() {
+        cancelCountdown(true); stopGuideLoop(true); clearBlinkTimer(); releaseScreenWakeLock();
+        if (state.stream) state.stream.getTracks().forEach(track => track.stop());
+        state.stream = null; cameraVideo.srcObject = null;
+        state.pointers.clear(); state.twoPointerGesture = null; state.onePointerLast = null;
+      }
+      function clearCameraError() { $('#cameraError').classList.remove('is-visible'); $('#cameraErrorDetails').hidden = true; $('#cameraErrorDetailText').textContent = ''; }
+      function showCameraError(messageKey, error = null) {
+        $('#cameraErrorTitle').textContent = translate('cameraUnavailableTitle');
+        $('#cameraErrorMessage').textContent = translate(messageKey);
+        $('#cameraError').classList.add('is-visible');
+        if (error?.message) { $('#cameraErrorDetails').hidden = false; $('#cameraErrorDetailText').textContent = error.message; }
+      }
+      function showFileError(messageKey) {
+        if (!state.referenceFile) { AppToast.show({ message: `${translate('invalidFileTitle')}: ${translate(messageKey)}` }); return; }
+        $('#cameraErrorTitle').textContent = translate('invalidFileTitle');
+        $('#cameraErrorMessage').textContent = translate(messageKey);
+        $('#cameraError').classList.add('is-visible');
+      }
+      function clearBlinkTimer() {
+        if (state.blinkTimer) clearInterval(state.blinkTimer);
+        state.blinkTimer = 0; state.blinkVisible = true; ghostOverlay.style.visibility = 'visible';
+      }
+      function clearOutline() {
+        if (state.outlineUrl) safeRevoke(state.outlineUrl);
+        state.outlineUrl = ''; outlineOverlay.removeAttribute('src');
+      }
+      async function buildOutlineOverlay() {
+        clearOutline();
+        if (!state.referenceImage) return;
+        const w = Math.max(1, state.referenceImage.naturalWidth || 1), h = Math.max(1, state.referenceImage.naturalHeight || 1);
+        const maxSide = 960, scale = Math.min(1, maxSide / Math.max(w, h));
+        const canvas = document.createElement('canvas'); canvas.width = Math.max(1, Math.round(w * scale)); canvas.height = Math.max(1, Math.round(h * scale));
+        const ctx = canvas.getContext('2d', { willReadFrequently: true }); ctx.drawImage(state.referenceImage, 0, 0, canvas.width, canvas.height);
+        const image = ctx.getImageData(0, 0, canvas.width, canvas.height), src = image.data;
+        const gray = new Uint8Array(canvas.width * canvas.height);
+        for (let i = 0, p = 0; i < src.length; i += 4, p += 1) gray[p] = Math.round(src[i] * .299 + src[i + 1] * .587 + src[i + 2] * .114);
+        const out = ctx.createImageData(canvas.width, canvas.height), dst = out.data;
+        for (let y = 1; y < canvas.height - 1; y += 1) for (let x = 1; x < canvas.width - 1; x += 1) {
+          const i = y * canvas.width + x;
+          const gx = -gray[i-canvas.width-1] + gray[i-canvas.width+1] - 2*gray[i-1] + 2*gray[i+1] - gray[i+canvas.width-1] + gray[i+canvas.width+1];
+          const gy = -gray[i-canvas.width-1] - 2*gray[i-canvas.width] - gray[i-canvas.width+1] + gray[i+canvas.width-1] + 2*gray[i+canvas.width] + gray[i+canvas.width+1];
+          const mag = Math.hypot(gx, gy), d = i * 4;
+          if (mag > 72) { dst[d] = 255; dst[d+1] = 255; dst[d+2] = 255; dst[d+3] = Math.min(255, 110 + Math.round((mag - 72) * .8)); }
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.putImageData(out, 0, 0);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) return; state.outlineUrl = URL.createObjectURL(blob); outlineOverlay.src = state.outlineUrl;
+      }
+      function overlayModeHintKey() {
+        if (state.overlayMode === 'outline') return 'overlayModeOutlineHint';
+        if (state.overlayMode === 'blink') return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'overlayModeBlinkReducedHint' : 'overlayModeBlinkHint';
+        if (state.overlayMode === 'split') return 'overlayModeSplitHint';
+        return 'overlayModeGhostHint';
+      }
+      function renderOverlayMode() {
+        clearBlinkTimer();
+        document.querySelectorAll('[data-overlay-mode]').forEach(button => button.setAttribute('aria-pressed', button.dataset.overlayMode === state.overlayMode ? 'true' : 'false'));
+        ghostOverlay.hidden = state.overlayMode === 'outline';
+        outlineOverlay.hidden = state.overlayMode !== 'outline';
+        splitDivider.hidden = state.overlayMode !== 'split';
+        $('#splitPositionField').hidden = state.overlayMode !== 'split';
+        cameraStage.classList.toggle('mode-split', state.overlayMode === 'split');
+        cameraStage.style.setProperty('--split-pos', `${state.splitPosition}%`);
+        $('#splitValue').textContent = `${state.splitPosition}%`;
+        $('#overlayModeHint').textContent = translate(overlayModeHintKey());
+        if (state.overlayMode === 'blink') {
+          ghostOverlay.hidden = false; ghostOverlay.style.visibility = 'visible';
+          if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            state.blinkTimer = window.setInterval(() => { state.blinkVisible = !state.blinkVisible; ghostOverlay.style.visibility = state.blinkVisible ? 'visible' : 'hidden'; }, 720);
+          }
+        }
+      }
+      async function setOverlayMode(mode) {
+        if (!['ghost','outline','blink','split'].includes(mode)) mode = 'ghost';
+        state.overlayMode = mode;
+        renderOverlayMode(); renderOverlayTransform();
+        if (mode === 'outline' && !state.outlineUrl) { await buildOutlineOverlay(); if (state.overlayMode === 'outline') renderOverlayMode(); }
+      }
+
+      function resetOverlay(silent = false) {
+        state.transform = { tx: 0, ty: 0, scale: 1, rotation: 0, opacity: .5 };
+        renderOverlayTransform();
+        if (!silent) AppToast.show({ message: translate('overlayReset') });
+      }
+      function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+      function renderOverlayTransform() {
+        const t = state.transform;
+        const transform = `translate(${t.tx}%, ${t.ty}%) scale(${t.scale}) rotate(${t.rotation}deg)`;
+        ghostOverlay.style.transform = transform; outlineOverlay.style.transform = transform;
+        ghostOverlay.style.opacity = String(t.opacity); outlineOverlay.style.opacity = String(Math.max(.55, Math.min(1, t.opacity + .28)));
+        const opacityPercent = Math.round(t.opacity * 100); const scalePercent = Math.round(t.scale * 100); const rotation = Math.round(t.rotation);
+        $('#opacityRange').value = String(opacityPercent); $('#opacityValue').textContent = `${opacityPercent}%`;
+        $('#scaleRange').value = String(scalePercent); $('#scaleValue').textContent = `${scalePercent}%`;
+        $('#rotationRange').value = String(rotation); $('#rotationValue').textContent = `${rotation}°`;
+        $('#overlaySummary').textContent = `${opacityPercent}% · ${scalePercent}% · ${rotation}°`;
+      }
+
+      function translateFormat(key, values = {}) {
+        return String(translate(key)).replace(/\{(\w+)\}/g, (_, name) => values[name] ?? '');
+      }
+
+      function drawImageCover(image, canvas) {
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const cw = canvas.width; const ch = canvas.height;
+        const iw = image.naturalWidth || image.videoWidth || image.width; const ih = image.naturalHeight || image.videoHeight || image.height;
+        const scale = Math.max(cw / iw, ch / ih); const dw = iw * scale; const dh = ih * scale;
+        ctx.clearRect(0, 0, cw, ch); ctx.drawImage(image, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+      }
+
+      function analysisSizeForRatio(ratio) {
+        const safeRatio = Number.isFinite(ratio) && ratio > 0 ? ratio : 4 / 3;
+        if (safeRatio >= 1) return { width: 128, height: Math.max(72, Math.round(128 / safeRatio)) };
+        return { width: Math.max(72, Math.round(128 * safeRatio)), height: 128 };
+      }
+
+      function createGuideWorker() {
+        if (typeof Worker !== 'function') return null;
+        const workerSource = `
+          'use strict';
+          function edgeMap(rgba, width, height) {
+            const count = width * height;
+            const gray = new Float32Array(count);
+            for (let i = 0, p = 0; i < count; i += 1, p += 4) gray[i] = (rgba[p] * 0.299 + rgba[p + 1] * 0.587 + rgba[p + 2] * 0.114) / 255;
+            const raw = new Float32Array(count); let sum = 0; let samples = 0;
+            for (let y = 1; y < height - 1; y += 1) {
+              for (let x = 1; x < width - 1; x += 1) {
+                const i = y * width + x;
+                const gx = gray[i + 1] - gray[i - 1];
+                const gy = gray[i + width] - gray[i - width];
+                const magnitude = Math.sqrt(gx * gx + gy * gy);
+                raw[i] = magnitude; sum += magnitude; samples += 1;
+              }
+            }
+            const mean = sum / Math.max(1, samples); const divisor = Math.max(0.012, mean * 3.2);
+            const edge = new Float32Array(count); let active = 0;
+            for (let i = 0; i < count; i += 1) { const value = Math.min(1, raw[i] / divisor); edge[i] = value; if (value > 0.26) active += 1; }
+            return { edge, density: active / count, mean };
+          }
+          function scoreCandidate(reference, current, width, height, scale, angle, tx, ty) {
+            const radians = angle * Math.PI / 180; const c = Math.cos(radians); const s = Math.sin(radians);
+            const cx = (width - 1) / 2; const cy = (height - 1) / 2;
+            let dot = 0; let ref2 = 0; let cur2 = 0; let used = 0;
+            for (let y = 5; y < height - 5; y += 3) {
+              for (let x = 5; x < width - 5; x += 3) {
+                const ox = (x - cx - tx) / scale; const oy = (y - cy - ty) / scale;
+                const sourceX = Math.round(c * ox + s * oy + cx); const sourceY = Math.round(-s * ox + c * oy + cy);
+                if (sourceX < 1 || sourceX >= width - 1 || sourceY < 1 || sourceY >= height - 1) continue;
+                const a = reference[y * width + x]; const b = current[sourceY * width + sourceX];
+                if (a < 0.08 && b < 0.08) continue;
+                dot += a * b; ref2 += a * a; cur2 += b * b; used += 1;
+              }
+            }
+            if (used < 28 || ref2 < 1e-5 || cur2 < 1e-5) return 0;
+            return dot / Math.sqrt(ref2 * cur2);
+          }
+          function analyze(referenceRgba, currentRgba, width, height) {
+            const refData = edgeMap(referenceRgba, width, height); const curData = edgeMap(currentRgba, width, height);
+            if (refData.density < 0.018 || curData.density < 0.018 || refData.mean < 0.006 || curData.mean < 0.006) return { reliable: false, reason: 'low-detail' };
+            const angles = [-8, -4, 0, 4, 8]; const scales = [0.86, 0.93, 1, 1.07, 1.15];
+            const txs = [-18, -12, -6, 0, 6, 12, 18]; const tys = [-14, -9, -4, 0, 4, 9, 14];
+            let best = { score: -1, scale: 1, angle: 0, tx: 0, ty: 0 };
+            for (const angle of angles) for (const scale of scales) for (const tx of txs) for (const ty of tys) {
+              const score = scoreCandidate(refData.edge, curData.edge, width, height, scale, angle, tx, ty);
+              if (score > best.score) best = { score, scale, angle, tx, ty };
+            }
+            const refinedAngles = [best.angle - 2, best.angle, best.angle + 2];
+            const refinedScales = [Math.max(0.78, best.scale - 0.035), best.scale, Math.min(1.24, best.scale + 0.035)];
+            const refinedTx = [best.tx - 3, best.tx, best.tx + 3]; const refinedTy = [best.ty - 3, best.ty, best.ty + 3];
+            for (const angle of refinedAngles) for (const scale of refinedScales) for (const tx of refinedTx) for (const ty of refinedTy) {
+              const score = scoreCandidate(refData.edge, curData.edge, width, height, scale, angle, tx, ty);
+              if (score > best.score) best = { score, scale, angle, tx, ty };
+            }
+            const structural = Math.max(0, Math.min(1, (best.score - 0.36) / 0.52));
+            const dxNorm = best.tx / width; const dyNorm = best.ty / height;
+            const deviation = Math.max(Math.abs(dxNorm) / 0.15, Math.abs(dyNorm) / 0.15, Math.abs(Math.log(best.scale)) / 0.18, Math.abs(best.angle) / 10);
+            const alignment = Math.max(0, Math.min(1, 1 - deviation));
+            const match = Math.round(100 * structural * (0.45 + 0.55 * alignment));
+            const reliable = best.score >= 0.47 && structural >= 0.20;
+            return { reliable, rawScore: best.score, match, dxNorm, dyNorm, scale: best.scale, angle: best.angle, refDensity: refData.density, currentDensity: curData.density };
+          }
+          self.onmessage = event => {
+            const data = event.data || {};
+            if (data.type !== 'analyze') return;
+            try { self.postMessage({ type: 'result', generation: data.generation, result: analyze(data.reference, data.current, data.width, data.height) }); }
+            catch (error) { self.postMessage({ type: 'result', generation: data.generation, result: { reliable: false, reason: 'worker-error', detail: error && error.message ? error.message : String(error) } }); }
+          };
+        `;
+        const url = URL.createObjectURL(new Blob([workerSource], { type: 'text/javascript' }));
+        const worker = new Worker(url); state.guideWorkerUrl = url;
+        worker.onmessage = event => {
+          const payload = event.data || {}; if (payload.type !== 'result' || payload.generation !== state.guideGeneration) return;
+          state.guideBusy = false; handleGuideResult(payload.result || { reliable: false }); scheduleGuideFrame(760);
+        };
+        worker.onerror = () => { state.guideBusy = false; state.guideFailures = 3; state.guideStable = null; renderGuideState(null, true); scheduleGuideFrame(1200); };
+        return worker;
+      }
+
+      function ensureGuideWorker() {
+        if (!state.guideWorker) state.guideWorker = createGuideWorker();
+        return state.guideWorker;
+      }
+
+      function prepareGuideReference() {
+        if (!state.referenceImage || !cameraStage.clientWidth || !cameraStage.clientHeight) return false;
+        const ratio = cameraStage.clientWidth / cameraStage.clientHeight; const size = analysisSizeForRatio(ratio);
+        referenceAnalysisCanvas.width = size.width; referenceAnalysisCanvas.height = size.height;
+        analysisCanvas.width = size.width; analysisCanvas.height = size.height;
+        drawImageCover(state.referenceImage, referenceAnalysisCanvas);
+        state.guideReference = referenceAnalysisCanvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, size.width, size.height).data;
+        state.guideStable = null; state.guideFailures = 0; state.guideDisplayKey = null; state.guideCandidateKey = null; state.guideCandidateCount = 0; return true;
+      }
+
+      function stopGuideLoop(clearDisplay = false) {
+        if (state.guideTimer) clearTimeout(state.guideTimer); state.guideTimer = 0; state.guideBusy = false; state.guideGeneration += 1;
+        if (clearDisplay) { state.guideStable = null; state.guideFailures = 0; state.guideDisplayKey = null; state.guideCandidateKey = null; state.guideCandidateCount = 0; renderGuideState(null); }
+      }
+
+      function startGuideLoop() {
+        stopGuideLoop(false); state.guideGeneration += 1;
+        if (state.manualAdjust) { renderGuideState(null); return; }
+        if (!state.guideEnabled || !state.stream || !prepareGuideReference() || !ensureGuideWorker()) { renderGuideState(null, !state.guideEnabled ? false : true); return; }
+        renderGuideState(null); scheduleGuideFrame(240);
+      }
+
+      function scheduleGuideFrame(delay = 800) {
+        if (state.guideTimer) clearTimeout(state.guideTimer);
+        if (!state.guideEnabled || state.manualAdjust || !state.stream || state.phase !== 'camera' || document.hidden) return;
+        state.guideTimer = window.setTimeout(runGuideFrame, delay);
+      }
+
+      function runGuideFrame() {
+        state.guideTimer = 0;
+        if (!state.guideEnabled || state.manualAdjust || !state.stream || state.phase !== 'camera' || state.guideBusy || !state.guideReference || !cameraVideo.videoWidth) return;
+        try {
+          const width = analysisCanvas.width; const height = analysisCanvas.height; const ratio = width / height;
+          const crop = visibleVideoCrop(cameraVideo, ratio); const ctx = analysisCanvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(cameraVideo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, width, height);
+          const current = ctx.getImageData(0, 0, width, height).data;
+          state.guideBusy = true;
+          state.guideWorker.postMessage({ type: 'analyze', generation: state.guideGeneration, width, height, reference: state.guideReference, current });
+        } catch (error) { state.guideBusy = false; state.guideFailures += 1; if (state.guideFailures >= 3) { state.guideStable = null; state.guideDisplayKey = null; state.guideCandidateKey = null; state.guideCandidateCount = 0; renderGuideState(null, true); } scheduleGuideFrame(1100); }
+      }
+
+      function handleGuideResult(result) {
+        if (!state.guideEnabled || state.phase !== 'camera') return;
+        if (!result?.reliable) {
+          state.guideFailures += 1;
+          if (state.guideFailures >= 3) { state.guideStable = null; state.guideDisplayKey = null; state.guideCandidateKey = null; state.guideCandidateCount = 0; renderGuideState(null, true); }
+          return;
+        }
+        state.guideFailures = 0;
+        const previous = state.guideStable;
+        const alpha = previous ? 0.45 : 1;
+        state.guideStable = {
+          reliable: true,
+          match: Math.round((previous?.match ?? result.match) * (1 - alpha) + result.match * alpha),
+          dxNorm: (previous?.dxNorm ?? result.dxNorm) * (1 - alpha) + result.dxNorm * alpha,
+          dyNorm: (previous?.dyNorm ?? result.dyNorm) * (1 - alpha) + result.dyNorm * alpha,
+          scale: (previous?.scale ?? result.scale) * (1 - alpha) + result.scale * alpha,
+          angle: (previous?.angle ?? result.angle) * (1 - alpha) + result.angle * alpha
+        };
+        updateGuideDisplayKey(state.guideStable);
+        renderGuideState(state.guideStable);
+      }
+
+      function guideInstructionKey(result) {
+        if (!result) return 'guidePreparing';
+        const dx = Math.abs(result.dxNorm) / 0.055; const dy = Math.abs(result.dyNorm) / 0.055;
+        const scale = Math.abs(Math.log(result.scale)) / 0.07; const angle = Math.abs(result.angle) / 3.2;
+        const max = Math.max(dx, dy, scale, angle);
+        if (max < 0.72 && result.match >= 80) return 'guideClose';
+        if (max === dx) return result.dxNorm > 0 ? 'guideLeft' : 'guideRight';
+        if (max === dy) return result.dyNorm > 0 ? 'guideUp' : 'guideDown';
+        if (max === scale) return result.scale > 1 ? 'guideCloser' : 'guideFarther';
+        return result.angle > 0 ? 'guideTiltRight' : 'guideTiltLeft';
+      }
+
+      function updateGuideDisplayKey(result) {
+        const candidate = guideInstructionKey(result);
+        if (!state.guideDisplayKey) {
+          state.guideDisplayKey = candidate; state.guideCandidateKey = null; state.guideCandidateCount = 0; return candidate;
+        }
+        if (candidate === state.guideDisplayKey) {
+          state.guideCandidateKey = null; state.guideCandidateCount = 0; return state.guideDisplayKey;
+        }
+        if (candidate === state.guideCandidateKey) state.guideCandidateCount += 1;
+        else { state.guideCandidateKey = candidate; state.guideCandidateCount = 1; }
+        if (state.guideCandidateCount >= 2) {
+          state.guideDisplayKey = candidate; state.guideCandidateKey = null; state.guideCandidateCount = 0;
+        }
+        return state.guideDisplayKey;
+      }
+
+      function renderGuideState(result = state.guideStable, unavailable = false) {
+        const instruction = $('#guideInstruction'); const main = $('#guideInstructionText'); const sub = $('#guideInstructionSub'); const pill = $('#guideScorePill'); const score = $('#guideScoreText');
+        if (!instruction || !main || !pill) return;
+        instruction.classList.remove('is-close', 'is-unavailable'); pill.classList.add('is-muted'); pill.classList.remove('is-hidden');
+        if (state.manualAdjust) { main.textContent = translate('manualAdjustActive'); sub.textContent = translate('manualAdjustActiveSub'); score.textContent = '—'; pill.classList.add('is-hidden'); return; }
+        if (!state.guideEnabled) { main.textContent = translate('guideOff'); sub.textContent = translate('gestureHint'); score.textContent = '—'; pill.classList.add('is-hidden'); return; }
+        if (unavailable) { main.textContent = translate('guideUnavailable'); sub.textContent = translate('guideUnavailableSub'); score.textContent = '—'; instruction.classList.add('is-unavailable'); return; }
+        if (!result?.reliable) { main.textContent = translate('guidePreparing'); sub.textContent = translate('gestureHint'); score.textContent = translate('guidePreparingShort'); return; }
+        const key = state.guideDisplayKey || guideInstructionKey(result); main.textContent = translate(key); sub.textContent = translate('guideCaution'); score.textContent = translateFormat('guideScore', { score: clamp(result.match, 0, 99) }); pill.classList.remove('is-muted');
+        if (key === 'guideClose') instruction.classList.add('is-close');
+      }
+
+      function setManualAdjust(enabled) {
+        state.manualAdjust = Boolean(enabled);
+        manualAdjustToggle.checked = state.manualAdjust;
+        cameraStage.classList.toggle('is-adjusting', state.manualAdjust);
+        state.pointers.clear(); state.twoPointerGesture = null; state.onePointerLast = null;
+        if (state.manualAdjust) {
+          stopGuideLoop(false); renderGuideState(null);
+        } else if (state.phase === 'camera' && state.stream && state.guideEnabled) {
+          startGuideLoop();
+        } else {
+          renderGuideState(state.guideStable);
+        }
+      }
+
+      function updateTimerUi() {
+        const label = $('#timerButtonLabel'); if (!label) return;
+        label.textContent = state.timerSeconds ? translateFormat('timerSeconds', { seconds: state.timerSeconds }) : translate('timerOff');
+        document.querySelectorAll('.timer-option').forEach(button => {
+          const seconds = Number(button.dataset.timer || 0); button.setAttribute('aria-checked', seconds === state.timerSeconds ? 'true' : 'false');
+          if (seconds > 0) button.textContent = state.language === 'ja' ? `${seconds}秒` : `${seconds}s`;
+          else button.textContent = translate('timerOff');
+        });
+      }
+
+      function setTimerSeconds(seconds) {
+        state.timerSeconds = [0, 3, 5, 10].includes(Number(seconds)) ? Number(seconds) : 0; timerPopover.hidden = true; $('#timerButton').setAttribute('aria-expanded', 'false'); updateTimerUi();
+      }
+
+      function cancelCountdown(silent = false) {
+        if (state.countdownTimer) clearTimeout(state.countdownTimer); state.countdownTimer = 0;
+        const wasActive = state.countdownActive; state.countdownActive = false; $('#countdownOverlay').hidden = true; $('#countdownCancelButton').hidden = true;
+        $('#timerButton').disabled = false;
+        if (state.phase === 'camera') { shutterButton.disabled = false; switchCameraButton.disabled = state.cameraCount === 1; }
+        if (wasActive && !silent) AppToast.show({ message: translate('timerCancelled') });
+      }
+
+      function beginCountdown() {
+        if (!state.stream || state.countdownActive || !state.timerSeconds) return;
+        state.countdownActive = true; shutterButton.disabled = true; switchCameraButton.disabled = true; $('#timerButton').disabled = true;
+        $('#countdownOverlay').hidden = false; $('#countdownCancelButton').hidden = false;
+        let remaining = state.timerSeconds; $('#countdownNumber').textContent = String(remaining);
+        const tick = () => {
+          if (!state.countdownActive) return;
+          remaining -= 1;
+          if (remaining <= 0) {
+            state.countdownActive = false; $('#countdownOverlay').hidden = true; $('#countdownCancelButton').hidden = true; $('#timerButton').disabled = false; shutterButton.disabled = false;
+            capturePhoto(); return;
+          }
+          $('#countdownNumber').textContent = String(remaining); state.countdownTimer = window.setTimeout(tick, 1000);
+        };
+        state.countdownTimer = window.setTimeout(tick, 1000);
+      }
+
+      function requestCapture() { if (state.timerSeconds > 0) beginCountdown(); else capturePhoto(); }
+
+      async function loadReference(file) {
+        if (!file) return;
+        stopCameraStream(); clearCapture(); clearCameraError();
+        if (!validImageType(file)) { if (state.referenceFile) showScreen('ready'); else showScreen('empty'); showFileError('invalidType'); return; }
+        if (file.size > 50 * 1024 * 1024) { if (state.referenceFile) showScreen('ready'); else showScreen('empty'); showFileError('tooLarge'); return; }
+        const generation = ++state.sourceGeneration;
+        const newUrl = URL.createObjectURL(file);
+        const image = new Image();
+        image.decoding = 'async'; image.src = newUrl;
+        try {
+          if (image.decode) await image.decode(); else await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = reject; });
+          if (generation !== state.sourceGeneration) { safeRevoke(newUrl); return; }
+        } catch (error) {
+          safeRevoke(newUrl); if (state.referenceFile) showScreen('ready'); else showScreen('empty'); showFileError('decodeFailed'); return;
+        }
+        safeRevoke(state.referenceUrl); clearOutline();
+        state.referenceFile = file; state.referenceUrl = newUrl; state.referenceImage = image;
+        resetOverlay(true);
+        referencePreview.src = newUrl; referencePreview.alt = file.name || '';
+        ghostOverlay.src = newUrl; ghostOverlay.alt = '';
+        if (state.overlayMode === 'outline') await buildOutlineOverlay();
+        $('#referenceName').textContent = file.name || 'photo';
+        $('#stageReferenceName').textContent = file.name || 'photo';
+        $('#referenceMeta').textContent = `${image.naturalWidth} × ${image.naturalHeight} · ${formatBytes(file.size)}`;
+        outputFilename.value = defaultFilenameBase();
+        clearCameraError(); showScreen('ready');
+      }
+
+      function cameraErrorKey(error) {
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) return 'cameraSecure';
+        if (error?.name === 'NotAllowedError' || error?.name === 'SecurityError') return 'cameraPermission';
+        if (error?.name === 'NotFoundError' || error?.name === 'OverconstrainedError') return 'cameraMissing';
+        return 'cameraGeneric';
+      }
+      async function requestCameraStream() {
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) throw Object.assign(new Error('Camera API requires a secure context (HTTPS or localhost).'), { code: 'INSECURE_CONTEXT' });
+        const constraints = { audio: false, video: { facingMode: { ideal: state.facing }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
+        return navigator.mediaDevices.getUserMedia(constraints);
+      }
+      async function attachStream(stream) {
+        state.stream = stream; cameraVideo.srcObject = stream;
+        await cameraVideo.play();
+        if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) await new Promise(resolve => cameraVideo.addEventListener('loadedmetadata', resolve, { once: true }));
+        const ratio = cameraVideo.videoWidth && cameraVideo.videoHeight ? cameraVideo.videoWidth / cameraVideo.videoHeight : 4 / 3;
+        cameraStage.style.setProperty('--stage-ratio', String(ratio));
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          state.cameraCount = devices.filter(device => device.kind === 'videoinput').length;
+        } catch { state.cameraCount = 0; }
+        switchCameraButton.disabled = state.cameraCount === 1;
+        switchCameraButton.title = state.cameraCount === 1 ? translate('cameraOnlyOne') : '';
+        requestScreenWakeLock();
+      }
+      async function startCamera() {
+        if (!state.referenceFile) return;
+        clearCameraError();
+        state.phase = 'starting-camera'; $('#startCameraButton').disabled = true; $('#startCameraButton span').textContent = translate('startingCamera');
+        try {
+          stopCameraStream();
+          const stream = await requestCameraStream();
+          await attachStream(stream);
+          showScreen('camera'); setManualAdjust(false); renderOverlayMode();
+        } catch (error) {
+          stopCameraStream(); showScreen('ready'); showCameraError(error?.code === 'INSECURE_CONTEXT' ? 'cameraSecure' : cameraErrorKey(error), error);
+        } finally {
+          $('#startCameraButton').disabled = false; $('#startCameraButton span').textContent = translate('startCamera');
+        }
+      }
+      async function switchCamera() {
+        if (!state.stream || shutterButton.disabled) return;
+        const previousFacing = state.facing; const nextFacing = previousFacing === 'environment' ? 'user' : 'environment';
+        shutterButton.disabled = true; switchCameraButton.disabled = true;
+        stopCameraStream(); state.facing = nextFacing;
+        try {
+          await attachStream(await requestCameraStream()); renderOverlayMode(); startGuideLoop();
+        } catch (error) {
+          state.facing = previousFacing;
+          try { await attachStream(await requestCameraStream()); renderOverlayMode(); startGuideLoop(); } catch { showCameraError(cameraErrorKey(error), error); showScreen('ready'); }
+          AppToast.show({ message: translate('cameraSwitchFailed') });
+        } finally {
+          shutterButton.disabled = false;
+          if (state.phase === 'camera') switchCameraButton.disabled = state.cameraCount === 1;
+        }
+      }
+
+      function visibleVideoCrop(video, stageRatio) {
+        const vw = video.videoWidth; const vh = video.videoHeight; const videoRatio = vw / vh;
+        if (videoRatio > stageRatio) {
+          const sw = vh * stageRatio; return { sx: (vw - sw) / 2, sy: 0, sw, sh: vh };
+        }
+        const sh = vw / stageRatio; return { sx: 0, sy: (vh - sh) / 2, sw: vw, sh };
+      }
+      function drawAlignedReference(canvas) {
+        const image = state.referenceImage; if (!image) throw new Error('Reference image missing.');
+        const ctx = canvas.getContext('2d'); const cw = canvas.width; const ch = canvas.height;
+        ctx.clearRect(0, 0, cw, ch); ctx.fillStyle = '#111'; ctx.fillRect(0, 0, cw, ch);
+        const cover = Math.max(cw / image.naturalWidth, ch / image.naturalHeight);
+        const dw = image.naturalWidth * cover; const dh = image.naturalHeight * cover;
+        const t = state.transform;
+        ctx.save(); ctx.translate(cw / 2 + (t.tx / 100) * cw, ch / 2 + (t.ty / 100) * ch); ctx.rotate(t.rotation * Math.PI / 180); ctx.scale(t.scale, t.scale);
+        ctx.drawImage(image, -dw / 2, -dh / 2, dw, dh); ctx.restore();
+      }
+      function canvasToBlob(canvas, type = 'image/jpeg', quality = .92) { return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Canvas encoding failed.')), type, quality)); }
+      async function capturePhoto() {
+        if (!state.stream || !cameraVideo.videoWidth || shutterButton.disabled) return;
+        shutterButton.disabled = true; switchCameraButton.disabled = true; state.phase = 'capturing';
+        try {
+          const stageRatio = cameraStage.clientWidth / cameraStage.clientHeight;
+          const crop = visibleVideoCrop(cameraVideo, stageRatio);
+          const maxLongSide = 2400; const cropLong = Math.max(crop.sw, crop.sh); const downscale = Math.min(1, maxLongSide / cropLong);
+          const outputWidth = Math.max(1, Math.round(crop.sw * downscale)); const outputHeight = Math.max(1, Math.round(crop.sh * downscale));
+          const captureCanvas = $('#captureCanvas'); captureCanvas.width = outputWidth; captureCanvas.height = outputHeight;
+          const ctx = captureCanvas.getContext('2d'); ctx.drawImage(cameraVideo, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, outputWidth, outputHeight);
+          const capturedBlob = await canvasToBlob(captureCanvas);
+          const beforeCanvas = $('#beforeCanvas'); beforeCanvas.width = outputWidth; beforeCanvas.height = outputHeight; drawAlignedReference(beforeCanvas);
+          const alignedBeforeBlob = await canvasToBlob(beforeCanvas);
+          clearCapture();
+          state.capturedBlob = capturedBlob; state.capturedUrl = URL.createObjectURL(capturedBlob);
+          state.alignedBeforeBlob = alignedBeforeBlob; state.alignedBeforeUrl = URL.createObjectURL(alignedBeforeBlob);
+          state.captureRatio = outputWidth / outputHeight; state.capturedAt = new Date();
+          $('#afterImage').src = state.capturedUrl; $('#beforeImage').src = state.alignedBeforeUrl;
+          compareFrame.style.setProperty('--result-ratio', String(state.captureRatio)); setComparePosition(50);
+          cameraStage.classList.remove('is-flashing'); void cameraStage.offsetWidth; cameraStage.classList.add('is-flashing'); captureFeedback();
+          stopCameraStream(); showScreen('result');
+        } catch (error) {
+          console.error(error); state.phase = 'camera'; AppToast.show({ message: translate('captureFailed') });
+          shutterButton.disabled = false; switchCameraButton.disabled = state.cameraCount === 1;
+        }
+      }
+
+      function setComparePosition(value) {
+        const position = clamp(Number(value), 0, 100);
+        state.comparePosition = position;
+        compareFrame.style.setProperty('--compare-pos', `${position}%`);
+        compareFrame.setAttribute('aria-valuenow', String(Math.round(position)));
+        compareFrame.setAttribute('aria-valuetext', `${Math.round(position)}% Before`);
+      }
+      function setCompareFromClientX(clientX) {
+        const rect = compareFrame.getBoundingClientRect();
+        if (!rect.width) return;
+        setComparePosition(((clientX - rect.left) / rect.width) * 100);
+      }
+      function onComparePointerDown(event) {
+        if (event.button !== undefined && event.button !== 0) return;
+        state.comparePointerId = event.pointerId;
+        compareFrame.setPointerCapture?.(event.pointerId);
+        setCompareFromClientX(event.clientX);
+        event.preventDefault();
+      }
+      function onComparePointerMove(event) {
+        if (state.comparePointerId !== event.pointerId) return;
+        setCompareFromClientX(event.clientX);
+        event.preventDefault();
+      }
+      function onComparePointerEnd(event) {
+        if (state.comparePointerId !== event.pointerId) return;
+        if (compareFrame.hasPointerCapture?.(event.pointerId)) compareFrame.releasePointerCapture(event.pointerId);
+        state.comparePointerId = null;
+      }
+      function onCompareKeyDown(event) {
+        const step = event.shiftKey ? 10 : 3;
+        if (event.key === 'ArrowLeft') { setComparePosition(state.comparePosition - step); event.preventDefault(); }
+        else if (event.key === 'ArrowRight') { setComparePosition(state.comparePosition + step); event.preventDefault(); }
+        else if (event.key === 'Home') { setComparePosition(0); event.preventDefault(); }
+        else if (event.key === 'End') { setComparePosition(100); event.preventDefault(); }
+      }
+      function defaultFilenameBase() {
+        const now = new Date(); const yyyy = now.getFullYear(); const mm = String(now.getMonth() + 1).padStart(2, '0'); const dd = String(now.getDate()).padStart(2, '0');
+        return `photo-reenact-${yyyy}-${mm}-${dd}`;
+      }
+      function normalizeFilenameBase(value = outputFilename.value) {
+        const cleaned = String(value || '').replace(/\.jpe?g$/i, '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, '-').replace(/\s+/g, ' ').replace(/[. ]+$/g, '').trim().slice(0, 110);
+        return cleaned || defaultFilenameBase();
+      }
+      function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+      function savePhoto() {
+        if (!state.capturedBlob) return;
+        outputFilename.value = normalizeFilenameBase(); downloadBlob(state.capturedBlob, `${outputFilename.value}.jpg`); AppToast.show({ message: translate('saved') });
+      }
+      function blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result || '')); reader.onerror = () => reject(reader.error || new Error('FileReader failed.')); reader.readAsDataURL(blob); });
+      }
+      function loadBlobImage(blob) {
+        return new Promise((resolve, reject) => { const url = URL.createObjectURL(blob); const image = new Image(); image.onload = () => { URL.revokeObjectURL(url); resolve(image); }; image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image decode failed.')); }; image.src = url; });
+      }
+      async function saveComparisonImage() {
+        if (!state.capturedBlob || !state.alignedBeforeBlob) return;
+        const [before, after] = await Promise.all([loadBlobImage(state.alignedBeforeBlob), loadBlobImage(state.capturedBlob)]);
+        const sourceW = after.naturalWidth; const sourceH = after.naturalHeight; const scale = Math.min(1, 1400 / Math.max(sourceW, sourceH));
+        const w = Math.max(1, Math.round(sourceW * scale)); const h = Math.max(1, Math.round(sourceH * scale)); const top = 44;
+        const canvas = $('#comparisonCanvas'); canvas.width = w * 2; canvas.height = h + top; const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#111'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.drawImage(before, 0, top, w, h); ctx.drawImage(after, w, top, w, h);
+        ctx.fillStyle = '#20211f'; ctx.fillRect(0, 0, canvas.width, top); ctx.fillStyle = '#fff'; ctx.font = `700 ${Math.max(16, Math.round(top * .38))}px sans-serif`; ctx.textBaseline = 'middle';
+        ctx.fillText('Before', 14, top / 2); ctx.fillText('After', w + 14, top / 2); ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.fillRect(w - 1, 0, 2, canvas.height);
+        const blob = await canvasToBlob(canvas, 'image/jpeg', .9); outputFilename.value = normalizeFilenameBase(); downloadBlob(blob, `${outputFilename.value}-compare.jpg`); AppToast.show({ message: translate('comparisonSaved') });
+      }
+      function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]); }
+      async function saveComparisonHtml() {
+        if (!state.capturedBlob || !state.alignedBeforeBlob) return;
+        const [beforeData, afterData] = await Promise.all([blobToDataUrl(state.alignedBeforeBlob), blobToDataUrl(state.capturedBlob)]);
+        const comment = escapeHtml($('#comparisonComment').value.trim()); const capturedAt = state.capturedAt || new Date(); const capturedLabel = escapeHtml(capturedAt.toLocaleString(state.language === 'ja' ? 'ja-JP' : 'en-US'));
+        const title = state.language === 'ja' ? 'Before / After 比較' : 'Before / After comparison';
+        const fullscreen = state.language === 'ja' ? '全画面' : 'Fullscreen'; const half = '50 / 50';
+        const html = `<!doctype html><html lang="${state.language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline';"><title>${escapeHtml(title)}</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f5f2;color:#20211f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.wrap{width:min(1000px,100%);margin:auto;padding:18px}.head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:12px}.head h1{font-size:20px;margin:0}.meta{font-size:12px;color:#666963}.frame{--p:50%;position:relative;aspect-ratio:${state.captureRatio};max-height:78vh;background:#111;overflow:hidden;border-radius:14px;cursor:ew-resize;touch-action:none;user-select:none}.frame:focus-visible{outline:3px solid #4d8bc7;outline-offset:3px}.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#111;pointer-events:none}.before{clip-path:inset(0 calc(100% - var(--p)) 0 0)}.line{position:absolute;top:0;bottom:0;left:var(--p);width:2px;background:#fff;transform:translateX(-1px);pointer-events:none}.handle{position:absolute;z-index:3;top:50%;left:clamp(22px,var(--p),calc(100% - 22px));width:42px;height:42px;transform:translate(-50%,-50%);border-radius:50%;background:#fff;color:#16624F;display:grid;place-items:center;box-shadow:0 2px 10px #0006;pointer-events:none}.handle svg{width:20px;height:20px}.tag{position:absolute;top:10px;padding:5px 8px;border-radius:999px;background:#0009;color:#fff;font-size:11px;font-weight:700}.tag.b{left:10px}.tag.a{right:10px}.controls{display:grid;gap:9px;margin-top:12px}.row{display:flex;flex-wrap:wrap;gap:8px}button{min-height:40px;padding:8px 12px;border:1px solid #dadbd6;border-radius:10px;background:#fff;font-weight:700;cursor:pointer}.comment{margin-top:14px;padding:12px;border-radius:12px;background:#fff;border:1px solid #dadbd6;white-space:pre-wrap}.hint{margin-top:10px;color:#666963;font-size:11px}@media(max-width:600px){.wrap{padding:10px}.head{align-items:start;flex-direction:column}.frame{max-height:72vh}}</style></head><body><main class="wrap"><div class="head"><div><h1>${escapeHtml(title)}</h1><div class="meta">${capturedLabel}</div></div><button id="fs" type="button">${escapeHtml(fullscreen)}</button></div><div class="frame" id="frame" role="slider" tabindex="0" aria-label="Before / After" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><img src="${afterData}" alt="After"><img class="before" src="${beforeData}" alt="Before"><span class="tag b">Before</span><span class="tag a">After</span><span class="line"></span><span class="handle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3m8-6 3 3-3 3"/></svg></span></div><div class="controls"><div class="row"><button data-v="100" type="button">Before</button><button data-v="50" type="button">${half}</button><button data-v="0" type="button">After</button></div></div>${comment ? `<div class="comment">${comment}</div>` : ''}<div class="hint">← / →</div></main><script>(()=>{const f=document.getElementById('frame');let p=50,pid=null;const set=v=>{p=Math.max(0,Math.min(100,Number(v)));f.style.setProperty('--p',p+'%');f.setAttribute('aria-valuenow',String(Math.round(p)))};const fromX=x=>{const b=f.getBoundingClientRect();if(b.width)set((x-b.left)/b.width*100)};f.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;pid=e.pointerId;f.setPointerCapture?.(pid);fromX(e.clientX);e.preventDefault()});f.addEventListener('pointermove',e=>{if(pid!==e.pointerId)return;fromX(e.clientX);e.preventDefault()});const end=e=>{if(pid!==e.pointerId)return;if(f.hasPointerCapture?.(pid))f.releasePointerCapture(pid);pid=null};f.addEventListener('pointerup',end);f.addEventListener('pointercancel',end);document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>set(b.dataset.v)));f.addEventListener('keydown',e=>{const d=e.shiftKey?10:3;if(e.key==='ArrowLeft'){set(p-d);e.preventDefault()}else if(e.key==='ArrowRight'){set(p+d);e.preventDefault()}else if(e.key==='Home'){set(0);e.preventDefault()}else if(e.key==='End'){set(100);e.preventDefault()}});document.getElementById('fs').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()})})();<${'/' + 'script'}></body></html>`;
+        outputFilename.value = normalizeFilenameBase(); downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), `${outputFilename.value}-compare.html`); AppToast.show({ message: translate('htmlSaved') });
+      }
+      function openHtmlExportDialog() { if (state.capturedBlob && state.alignedBeforeBlob) exportHtmlDialog.showModal(); }
+      async function retake() { showScreen('ready'); await startCamera(); }
+      function chooseNewReference() { fileInput.value = ''; fileInput.click(); }
+
+      // Pointer gestures use percentage translation so the alignment survives moderate stage resizing.
+      function pointFromEvent(event) { return { x: event.clientX, y: event.clientY }; }
+      function twoGestureSnapshot() {
+        const points = [...state.pointers.values()]; if (points.length < 2) return null;
+        const a = points[0], b = points[1];
+        return { distance: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI, midX: (a.x + b.x) / 2, midY: (a.y + b.y) / 2, scale: state.transform.scale, rotation: state.transform.rotation, tx: state.transform.tx, ty: state.transform.ty };
+      }
+      function onPointerDown(event) {
+        if (state.phase !== 'camera' || !state.manualAdjust || state.countdownActive || event.target.closest('button, input, summary, a')) return; event.preventDefault(); cameraStage.setPointerCapture?.(event.pointerId); state.pointers.set(event.pointerId, pointFromEvent(event));
+        if (state.pointers.size === 1) { state.onePointerLast = pointFromEvent(event); state.twoPointerGesture = null; }
+        if (state.pointers.size === 2) { state.twoPointerGesture = twoGestureSnapshot(); state.onePointerLast = null; }
+      }
+      function onPointerMove(event) {
+        if (!state.manualAdjust || !state.pointers.has(event.pointerId) || state.phase !== 'camera') return; event.preventDefault(); state.pointers.set(event.pointerId, pointFromEvent(event));
+        const rect = cameraStage.getBoundingClientRect(); if (!rect.width || !rect.height) return;
+        if (state.pointers.size === 1) {
+          const current = pointFromEvent(event); const last = state.onePointerLast || current;
+          state.transform.tx += ((current.x - last.x) / rect.width) * 100; state.transform.ty += ((current.y - last.y) / rect.height) * 100; state.onePointerLast = current;
+          renderOverlayTransform(); return;
+        }
+        if (state.pointers.size >= 2) {
+          const start = state.twoPointerGesture || twoGestureSnapshot(); if (!start) return;
+          const points = [...state.pointers.values()]; const a = points[0], b = points[1];
+          const distance = Math.hypot(b.x - a.x, b.y - a.y); const angle = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI; const midX = (a.x + b.x) / 2; const midY = (a.y + b.y) / 2;
+          state.transform.scale = clamp(start.scale * (distance / Math.max(1, start.distance)), .5, 2);
+          let deltaAngle = angle - start.angle; if (deltaAngle > 180) deltaAngle -= 360; if (deltaAngle < -180) deltaAngle += 360;
+          state.transform.rotation = clamp(start.rotation + deltaAngle, -45, 45);
+          state.transform.tx = start.tx + ((midX - start.midX) / rect.width) * 100; state.transform.ty = start.ty + ((midY - start.midY) / rect.height) * 100;
+          renderOverlayTransform();
+        }
+      }
+      function onPointerEnd(event) {
+        state.pointers.delete(event.pointerId);
+        if (state.pointers.size === 1) { state.onePointerLast = [...state.pointers.values()][0]; state.twoPointerGesture = null; }
+        else { state.onePointerLast = null; state.twoPointerGesture = null; }
+      }
+      function onWheel(event) {
+        if (state.phase !== 'camera' || !state.manualAdjust) return; event.preventDefault(); const factor = Math.exp(-event.deltaY * .0015); state.transform.scale = clamp(state.transform.scale * factor, .5, 2); renderOverlayTransform();
+      }
+
+      $('#chooseButton').addEventListener('click', event => { event.stopPropagation(); fileInput.click(); });
+      dropZone.addEventListener('click', event => { if (event.target.closest('button')) return; fileInput.click(); });
+      dropZone.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fileInput.click(); } });
+      ['dragenter', 'dragover'].forEach(type => dropZone.addEventListener(type, event => { event.preventDefault(); dropZone.classList.add('is-dragging'); }));
+      ['dragleave', 'drop'].forEach(type => dropZone.addEventListener(type, event => { event.preventDefault(); dropZone.classList.remove('is-dragging'); }));
+      dropZone.addEventListener('drop', event => { const file = event.dataTransfer?.files?.[0]; if (file) loadReference(file); });
+      fileInput.addEventListener('change', () => { const file = fileInput.files?.[0]; if (file) loadReference(file); fileInput.value = ''; });
+      $('#changeReferenceButton').addEventListener('click', chooseNewReference);
+      $('#newReferenceFromResultButton').addEventListener('click', chooseNewReference);
+      $('#startCameraButton').addEventListener('click', startCamera);
+      $('#backFromCameraButton').addEventListener('click', () => { stopCameraStream(); showScreen(state.capturedBlob ? 'result' : 'ready'); });
+      switchCameraButton.addEventListener('click', switchCamera);
+      shutterButton.addEventListener('click', requestCapture);
+      $('#resetOverlayButton').addEventListener('click', () => resetOverlay());
+      $('#timerButton').addEventListener('click', event => { event.stopPropagation(); timerPopover.hidden = !timerPopover.hidden; $('#timerButton').setAttribute('aria-expanded', timerPopover.hidden ? 'false' : 'true'); });
+      document.querySelectorAll('.timer-option').forEach(button => button.addEventListener('click', () => setTimerSeconds(Number(button.dataset.timer || 0))));
+      document.addEventListener('click', event => { if (!event.target.closest('.timer-control')) { timerPopover.hidden = true; $('#timerButton').setAttribute('aria-expanded', 'false'); } });
+      $('#countdownCancelButton').addEventListener('click', () => cancelCountdown(false));
+      guideToggle.addEventListener('change', () => { state.guideEnabled = guideToggle.checked; if (state.guideEnabled && !state.manualAdjust && state.phase === 'camera' && state.stream) startGuideLoop(); else stopGuideLoop(true); renderGuideState(); });
+      manualAdjustToggle.addEventListener('change', () => setManualAdjust(manualAdjustToggle.checked));
+      document.querySelectorAll('[data-overlay-mode]').forEach(button => button.addEventListener('click', () => setOverlayMode(button.dataset.overlayMode)));
+      splitRange.addEventListener('input', event => { state.splitPosition = clamp(Number(event.target.value), 15, 85); renderOverlayMode(); });
+      $('#opacityRange').addEventListener('input', event => { state.transform.opacity = Number(event.target.value) / 100; renderOverlayTransform(); });
+      $('#scaleRange').addEventListener('input', event => { state.transform.scale = Number(event.target.value) / 100; renderOverlayTransform(); });
+      $('#rotationRange').addEventListener('input', event => { state.transform.rotation = Number(event.target.value); renderOverlayTransform(); });
+      cameraStage.addEventListener('pointerdown', onPointerDown); cameraStage.addEventListener('pointermove', onPointerMove); cameraStage.addEventListener('pointerup', onPointerEnd); cameraStage.addEventListener('pointercancel', onPointerEnd);
+      cameraStage.addEventListener('wheel', onWheel, { passive: false });
+      compareFrame.addEventListener('pointerdown', onComparePointerDown);
+      compareFrame.addEventListener('pointermove', onComparePointerMove);
+      compareFrame.addEventListener('pointerup', onComparePointerEnd);
+      compareFrame.addEventListener('pointercancel', onComparePointerEnd);
+      compareFrame.addEventListener('keydown', onCompareKeyDown);
+      outputFilename.addEventListener('blur', () => { outputFilename.value = normalizeFilenameBase(); });
+      $('#savePhotoButton').addEventListener('click', savePhoto);
+      $('#saveCompareImageButton').addEventListener('click', () => saveComparisonImage().catch(error => { console.error(error); AppToast.show({ message: translate('captureFailed') }); }));
+      $('#saveCompareHtmlButton').addEventListener('click', openHtmlExportDialog);
+      $('#closeExportHtmlButton').addEventListener('click', () => exportHtmlDialog.close());
+      $('#cancelExportHtmlButton').addEventListener('click', () => exportHtmlDialog.close());
+      $('#confirmExportHtmlButton').addEventListener('click', () => { exportHtmlDialog.close(); saveComparisonHtml().catch(error => { console.error(error); AppToast.show({ message: translate('captureFailed') }); }); });
+      $('#retakeButton').addEventListener('click', retake);
+      $('#languageButton').addEventListener('click', () => { state.language = state.language === 'ja' ? 'en' : 'ja'; try { localStorage.setItem(storageKey, state.language); } catch {} applyLanguage(); });
+      $('#helpButton').addEventListener('click', () => helpDialog.showModal());
+      $('#closeHelpButton').addEventListener('click', () => helpDialog.close());
+      helpDialog.addEventListener('click', event => { const rect = helpDialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) helpDialog.close(); });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) { stopGuideLoop(false); releaseScreenWakeLock(); }
+        else if (state.phase === 'camera' && state.stream) { if (state.guideEnabled && !state.manualAdjust) startGuideLoop(); requestScreenWakeLock(); }
+      });
+      window.addEventListener('pagehide', stopCameraStream);
+      window.addEventListener('beforeunload', () => { stopCameraStream(); safeRevoke(state.referenceUrl); clearOutline(); clearCapture(); state.guideWorker?.terminate(); if (state.guideWorkerUrl) URL.revokeObjectURL(state.guideWorkerUrl); blobUrls.forEach(url => URL.revokeObjectURL(url)); });
+
+      state.language = detectLanguage(); $('#versionBadge').textContent = `v${APP_CONFIG.version}`; $('#footerName').textContent = APP_CONFIG.name; applyLanguage(); resetOverlay(true); setManualAdjust(false); renderOverlayMode(); showScreen('empty');
+    })();
+  </script>
+</body>
+</html>
