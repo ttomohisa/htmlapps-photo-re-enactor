@@ -23,9 +23,9 @@ GitHub Pages delivers the initial HTML. After it loads, reference-photo decoding
 - **One plain-language instruction at a time** — Local analysis estimates the largest horizontal, vertical, distance, or tilt offset and tells you what to adjust next.
 - **A complete manual fallback** — If automatic guidance is unsuitable, explicitly enable **Adjust reference manually** and move, zoom, or rotate the reference yourself.
 - **Shooting timer** — OFF / 3 / 5 / 10 seconds with cancellation.
-- **Direct Before / After comparison** — Drag the divider handle directly on the result image.
-- **Three export options** — Save the new JPEG, a side-by-side comparison JPEG, or a standalone comparison HTML with both photos embedded.
-- **Smartphone-first capture UI** — Portrait and landscape layouts keep camera switching, shutter, and timer controls accessible while shooting.
+- **Flexible Before / After comparison** — Switch among Split, Ghost, and Blink; in Split mode, drag the divider directly on the result image.
+- **Three export options** — Save the captured JPEG, a side-by-side comparison JPEG, or a standalone comparison HTML with both photos embedded. The comparison HTML also supports Split / Ghost / Blink and individual Before / After downloads.
+- **QR Reader-style camera UI** — On smartphones, the live view fills the screen and translucent camera controls stay over the image in both portrait and landscape.
 - **Fully local processing** — No runtime external connections, analytics, telemetry, login, or automatic upload.
 
 ## Quick start
@@ -45,12 +45,12 @@ Some browsers do not allow camera access from an HTML file opened through `file:
 ## Usage
 
 1. Choose the JPEG / PNG / WebP photo whose composition you want to recreate. Camera permission is not requested yet.
-2. Review the reference and press **Start camera**.
+2. Review the reference and press **Start shooting**.
 3. Choose Ghost / Outline / Blink / Split as needed, then move the camera according to the composition guide when it is available.
 4. If the reference itself needs adjustment, enable **Adjust reference manually**, then drag, pinch/zoom, or rotate it. Turning the mode off resumes composition guidance.
 5. Optionally choose a 3 / 5 / 10 second timer and press the shutter. A low match score never blocks capture.
-6. After capture, drag the divider handle directly on the image to compare Before and After.
-7. Save the new photo, comparison image, and/or standalone comparison HTML. **Retake** keeps the same reference and alignment for another shot.
+6. After capture, switch among Split, Ghost, and Blink to compare Before and After. In Split mode, drag the divider directly on the image.
+7. Save the captured photo, comparison image, and/or standalone comparison HTML. The HTML can also download Before and After individually. **Retake** asks for confirmation before returning to the camera while keeping the same reference and alignment.
 
 ## Composition guide
 
@@ -103,7 +103,7 @@ The GitHub Pages version still requires the initial HTML request, but the app do
 ## Limitations
 
 - Automatic composition guidance is an aid and can become unavailable with large viewpoint changes or low-detail scenes.
-- Person-pose matching, person identification, and match-triggered automatic capture are not part of v1.0.0.
+- Person-pose matching, person identification, and match-triggered automatic capture are not included in the current release.
 - Camera availability, resolution, Wake Lock, and vibration feedback vary by browser and device.
 - Camera access from a single HTML opened through `file://` is subject to browser security restrictions.
 

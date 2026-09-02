@@ -2,6 +2,33 @@
 
 All notable changes to Photo Re-Enactor are documented here.
 
+## 1.1.0 - 2026-09-02
+- Allow the capture-time Split divider to move fully from 0% to 100%.
+- Center the comparison HTML viewer and comparison preset controls.
+- Label comparison HTML comments, add its favicon, and remove the ambiguous arrow hint.
+- Improve the first screen with a compact three-step overview of the full workflow.
+- Move the three-step overview above the file drop area and add a smartphone fixed action bar for the current workflow step.
+- Refine comparison HTML labels so Ghost hides Before/After labels and Blink shows only the currently visible side.
+- Add a speech-bubble icon to comparison HTML comments.
+- Add a subtle STEP 1 label to the first screen, move the image icon to the “Choose another photo” action, and rename the main save action to “Save captured photo”.
+
+### Changed
+
+- Split mode now lets you drag the divider directly on the camera image.
+- Moved Reset position directly below the display-mode selector.
+- Refined the smartphone overlay-settings placement and made camera overlays more transparent.
+- Unified the manual-adjust and composition-guide row backgrounds.
+- Result comparison now supports Split, Ghost, and Blink.
+- Standalone comparison HTML now supports Split, Ghost, Blink, and direct Before/After photo downloads.
+- Fixed a stale disabled shutter state that could remain after returning to the camera.
+- Retake now asks for confirmation before leaving the result screen.
+- Refreshed the camera UI to follow the smartphone-first full-screen layout used by QR Reader.
+- Camera controls now sit on a dark translucent dock over the live view, with the shutter kept prominent in the center.
+- Smartphone capture hides the normal page chrome and uses an in-camera top bar for Back, language, and Help.
+- Overlay controls float above the camera dock and expand over the live view instead of pushing camera content down the page.
+- Smartphone landscape keeps the camera full-screen while moving the main controls into compact overlays that avoid covering the composition guide.
+- Desktop capture also uses the in-camera translucent dock while retaining the existing page layout and overlay settings panel.
+
 ## 1.0.0 - 2026-09-01
 
 ### Release

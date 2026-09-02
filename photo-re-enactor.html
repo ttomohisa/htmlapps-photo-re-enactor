@@ -29,6 +29,10 @@
       --radius: 14px;
       --header-height: 66px;
       --shoot-dock-height: 96px;
+      --camera-surface: #0c0f0e;
+      --camera-ui: rgba(10, 13, 12, .62);
+      --camera-ui-strong: rgba(10, 13, 12, .58);
+      --camera-line: rgba(255, 255, 255, .22);
     }
     * { box-sizing: border-box; }
     html { min-height: 100%; background: var(--bg); }
@@ -111,7 +115,7 @@
     }
     .local-badge svg { width: 15px; height: 15px; }
     .card { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
-    .start-card { padding: clamp(18px, 4vw, 28px); }
+    .start-card { padding: clamp(18px, 4vw, 28px); display: grid; gap: 14px; }
     .drop-zone {
       min-height: 286px;
       display: grid;
@@ -130,7 +134,16 @@
     .drop-icon { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 16px; background: var(--accent-soft); color: var(--accent); }
     .drop-icon svg { width: 31px; height: 31px; }
     .drop-title { margin: 0; font-size: 20px; letter-spacing: -.02em; }
-    .drop-body { margin: 0; max-width: 430px; color: var(--muted); font-size: 13px; }
+    .drop-body { margin: 0; max-width: 540px; color: var(--muted); font-size: 13px; }
+    .start-overview { display: grid; gap: 8px; margin: 0 auto 14px; }
+    .start-step-label { width: min(720px, 100%); margin: 0 auto -5px; text-align: left; }
+    .start-flow { width: min(720px, 100%); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 auto; }
+    .start-flow-item { min-width: 0; padding: 11px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-align: left; }
+    .start-flow-top { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+    .start-flow-number { width: 22px; height: 22px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 850; }
+    .start-flow-item strong { min-width: 0; font-size: 12px; line-height: 1.35; }
+    .start-flow-item p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .start-capabilities { color: var(--muted); font-size: 10px; font-weight: 650; text-align: center; margin: -4px auto 2px; }
     .format-note { color: var(--muted); font-size: 11px; }
     .button {
       min-height: 42px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface);
@@ -191,9 +204,14 @@
     .camera-stage:not(.is-adjusting) { touch-action: manipulation; cursor: default; }
     .camera-stage.is-adjusting .stage-shade { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 72%, white); }
     .camera-stage.mode-split .ghost-overlay { clip-path: inset(0 calc(100% - var(--split-pos, 50%)) 0 0); }
-    .split-divider { position: absolute; z-index: 7; top: 0; bottom: 0; left: var(--split-pos, 50%); width: 2px; transform: translateX(-1px); background: rgba(255,255,255,.9); box-shadow: 0 0 0 1px rgba(0,0,0,.2); pointer-events: none; }
-    .split-divider::after { content: ''; position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; transform: translate(-50%, -50%); border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: 0 2px 10px rgba(0,0,0,.2); }
+    .split-divider {
+      position: absolute; z-index: 7; top: 0; bottom: 0; left: var(--split-pos, 50%); width: 36px; transform: translateX(-50%);
+      background: linear-gradient(to right, transparent calc(50% - 1px), rgba(255,255,255,.92) calc(50% - 1px), rgba(255,255,255,.92) calc(50% + 1px), transparent calc(50% + 1px));
+      filter: drop-shadow(0 0 1px rgba(0,0,0,.35)); pointer-events: auto; cursor: ew-resize; touch-action: none;
+    }
+    .split-divider::after { content: ''; position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; transform: translate(-50%, -50%); border-radius: 999px; background: rgba(255,255,255,.92); box-shadow: 0 2px 10px rgba(0,0,0,.2); }
     .split-divider::before { content: '↔'; position: absolute; z-index: 1; left: 50%; top: 50%; transform: translate(-50%, -52%); color: var(--accent); font-size: 16px; font-weight: 800; }
+    .camera-stage:not(.mode-split) .split-divider { pointer-events: none; }
     .stage-shade { position: absolute; inset: 0; z-index: 3; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.14); border-radius: inherit; }
     .stage-top {
       position: absolute; z-index: 5; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
@@ -227,6 +245,8 @@
     .overlay-mode-button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--accent) 56%, var(--line)); background: var(--accent-soft); color: var(--accent); }
     .overlay-mode-hint { min-height: 16px; margin-top: 6px; color: var(--muted); font-size: 10px; }
     .split-position-field { grid-column: 1 / -1; padding-top: 0; }
+    .reset-overlay-field { grid-column: 1 / -1; padding-top: 8px; }
+    .reset-overlay-field .button { width: 100%; justify-content: center; }
     @media (max-width: 520px) { .overlay-mode-options { grid-template-columns: repeat(2, minmax(0,1fr)); } }
     .range-field { min-width: 0; padding-top: 11px; }
     .range-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; font-size: 11px; }
@@ -243,13 +263,13 @@
     .dock-action svg { width: 23px; height: 23px; }
     .shutter-wrap { display: grid; place-items: center; gap: 3px; color: var(--muted); font-size: 10px; font-weight: 750; }
     .shutter-button {
-      width: 70px; height: 70px; border-radius: 50%; border: 4px solid #fff; outline: 2px solid color-mix(in srgb, var(--accent) 70%, #111);
-      background: #fff; box-shadow: 0 3px 14px rgba(20, 22, 20, .2); cursor: pointer; position: relative;
+      width: 74px; height: 74px; border-radius: 50%; border: 4px solid #fff;
+      background: transparent; box-shadow: 0 2px 18px rgba(0,0,0,.28); cursor: pointer; position: relative;
     }
-    .shutter-button::after { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: var(--accent); transition: transform .12s ease, background .12s ease; }
-    .shutter-button:hover::after { background: var(--accent-hover); }
-    .shutter-button:active::after { transform: scale(.92); }
-    .shutter-button:disabled { opacity: .46; cursor: default; }
+    .shutter-button::before { content: ""; position: absolute; inset: 6px; border-radius: 50%; background: #fff; transition: transform .12s ease; }
+    .shutter-button:active::before { transform: scale(.88); }
+    .shutter-button:disabled { opacity: .45; cursor: default; }
+    .shutter-button:disabled::before { background: #aaa; }
     .result-grid { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .55fr); gap: 18px; }
     .compare-card { padding: 14px; min-width: 0; }
     .compare-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 10px; }
@@ -269,6 +289,14 @@
     .compare-label { position: absolute; z-index: 6; top: 10px; padding: 5px 8px; border-radius: 999px; background: rgba(18,20,18,.66); color: #fff; font-size: 10px; font-weight: 800; pointer-events: none; }
     .compare-label.before { left: 10px; } .compare-label.after { right: 10px; }
     .compare-drag-hint { margin: 9px 2px 0; color: var(--muted); font-size: 11px; text-align: center; }
+    .result-mode-bar { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin: 0 0 10px; }
+    .result-mode-button { min-height: 38px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--muted); font-size: 11px; font-weight: 760; cursor: pointer; }
+    .result-mode-button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--accent) 54%, var(--line)); background: var(--accent-soft); color: var(--accent); }
+    .compare-frame.mode-ghost .compare-before { clip-path: none; opacity: .5; }
+    .compare-frame.mode-blink .compare-before { clip-path: none; opacity: 1; }
+    .compare-frame.mode-ghost .compare-divider, .compare-frame.mode-ghost .compare-handle,
+    .compare-frame.mode-blink .compare-divider, .compare-frame.mode-blink .compare-handle { display: none; }
+    .compare-frame.mode-blink.is-blink-after .compare-before { visibility: hidden; }
     .result-actions { padding: 20px; display: flex; flex-direction: column; gap: 14px; align-self: start; }
     .result-actions h3 { margin: 0; font-size: 20px; }
     .result-actions p { margin: 0; color: var(--muted); font-size: 12px; }
@@ -300,6 +328,15 @@
     .app-toast.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .app-toast-message { min-width: 0; flex: 1; font-size: 12px; }
     .app-toast-action { border: 0; background: transparent; color: #bde5d8; font: inherit; font-weight: 800; cursor: pointer; }
+    .mobile-flow-bar { display: none; }
+    .mobile-flow-group { display: none; }
+    .mobile-flow-action {
+      min-width: 0; min-height: 54px; padding: 7px 10px; border: 0; border-radius: 13px; background: transparent; color: var(--muted);
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px; font: inherit; font-size: 11px; font-weight: 780; cursor: pointer;
+    }
+    .mobile-flow-action svg { width: 20px; height: 20px; flex: 0 0 auto; }
+    .mobile-flow-action.primary { background: var(--accent); color: #fff; }
+    .mobile-flow-action.secondary { background: var(--surface-muted); color: var(--text); }
     footer { width: min(1040px, 100%); margin: 0 auto; padding: 0 clamp(14px, 2.8vw, 30px) 32px; color: var(--muted); font-size: 11px; }
     @media (max-width: 760px) {
       .main { padding-top: 14px; }
@@ -325,8 +362,26 @@
       .page-intro h2 { font-size: 22px; }
       .page-intro p { margin-top: 5px; }
       .start-card { padding: 10px; border-radius: 16px; }
-      .drop-zone { min-height: 290px; padding: 22px 15px; }
+      .drop-zone { min-height: 0; padding: 18px 12px; gap: 11px; }
       .drop-title { font-size: 18px; }
+      .start-flow { gap: 5px; }
+      .start-flow-item { padding: 9px 7px; }
+      .start-flow-top { display: grid; justify-items: start; gap: 4px; }
+      .start-flow-item strong { font-size: 10px; }
+      .start-flow-item p { font-size: 9px; line-height: 1.4; }
+      .start-capabilities { max-width: 330px; line-height: 1.5; }
+      body.has-mobile-flow-bar { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
+      .mobile-flow-bar:not([hidden]) {
+        position: fixed; z-index: 82; left: 0; right: 0; bottom: 0; display: block;
+        padding: 7px 10px calc(7px + env(safe-area-inset-bottom));
+        border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+        background: rgba(255,255,255,.94); backdrop-filter: blur(18px) saturate(1.35); box-shadow: 0 -8px 24px rgba(20,22,20,.06);
+      }
+      .mobile-flow-group:not([hidden]) { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.25fr); gap: 7px; }
+      .mobile-flow-group[data-mobile-phase="empty"] { grid-template-columns: 1fr; }
+      .mobile-flow-action { min-height: 54px; }
+      body.camera-mode .mobile-flow-bar { display: none !important; }
+      body.has-mobile-flow-bar .app-toast { bottom: calc(90px + env(safe-area-inset-bottom)); }
       .ready-grid { gap: 10px; }
       .reference-preview-wrap { min-height: 280px; }
       .preview-caption { padding: 11px 12px; }
@@ -367,7 +422,7 @@
     .guide-instruction span { font-size: 9px; line-height: 1.25; opacity: .76; }
     .guide-instruction.is-close { background: color-mix(in srgb, var(--accent) 84%, rgba(18,20,18,.72)); }
     .guide-instruction.is-unavailable { background: rgba(55, 55, 52, .78); }
-    .guide-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+    .guide-switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 10px 11px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-muted); }
     .guide-switch-copy { min-width: 0; display: grid; gap: 2px; }
     .guide-switch-copy strong { font-size: 12px; }
     .guide-switch-copy span { color: var(--muted); font-size: 10px; }
@@ -426,6 +481,298 @@
       .shutter-button { width: 60px; height: 60px; }
       .stage-center-hint { display: none; }
     }
+
+    /* Camera UI follows the smartphone-first full-screen treatment used by QR Reader. */
+    .mobile-camera-top { display: none; }
+    .camera-stage .stage-shade {
+      background: linear-gradient(to bottom, rgba(0,0,0,.38), transparent 18%, transparent 66%, rgba(0,0,0,.52));
+    }
+    .camera-stage .shoot-dock {
+      position: absolute;
+      z-index: 12;
+      left: 50%;
+      right: auto;
+      top: auto;
+      bottom: 16px;
+      transform: translateX(-50%);
+      width: min(440px, calc(100% - 28px));
+      height: auto;
+      margin: 0;
+      grid-template-columns: minmax(0, 1fr) 104px minmax(0, 1fr);
+      grid-template-rows: none;
+      gap: 6px;
+      padding: 7px;
+      border: 1px solid var(--camera-line);
+      border-radius: 20px;
+      background: var(--camera-ui-strong);
+      color: #fff;
+      backdrop-filter: blur(10px) saturate(1.08);
+      box-shadow: 0 10px 32px rgba(0,0,0,.22);
+    }
+    .camera-stage .dock-action,
+    .camera-stage .shutter-wrap { color: rgba(255,255,255,.94); }
+    .camera-stage .dock-action { min-height: 56px; }
+    .camera-stage .dock-action:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .camera-stage .dock-action:active { background: rgba(255,255,255,.13); transform: scale(.97); }
+    .camera-stage .shutter-button {
+      width: 66px;
+      height: 66px;
+      border-color: #fff;
+      outline-color: rgba(255,255,255,.38);
+      box-shadow: 0 3px 14px rgba(0,0,0,.32);
+    }
+    .camera-stage .timer-popover {
+      border-color: var(--camera-line);
+      background: rgba(15,18,16,.96);
+      color: #fff;
+      box-shadow: 0 12px 32px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+    }
+    .camera-stage .timer-option:hover,
+    .camera-stage .timer-option[aria-checked="true"] { background: rgba(255,255,255,.12); color: #fff; }
+    .guide-instruction {
+      bottom: 122px;
+      transition: opacity .18s ease, transform .18s ease, background .18s ease;
+    }
+    .camera-stage.settings-open .guide-instruction { opacity: 0; transform: translate(-50%, 6px); }
+    .countdown-cancel { bottom: 126px; }
+
+    @media (max-width: 760px), (orientation: landscape) and (max-height: 560px) and (max-width: 980px) {
+      html:has(body.camera-mode), body.camera-mode {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0b0e0d;
+        overscroll-behavior: none;
+      }
+      body.camera-mode { padding: 0; }
+      body.camera-mode .app-header,
+      body.camera-mode .page-intro,
+      body.camera-mode footer { display: none; }
+      body.camera-mode .main {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body.camera-mode .camera-card {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+      body.camera-mode .camera-toolbar { display: none; }
+      body.camera-mode .camera-stage {
+        width: 100%;
+        height: 100svh;
+        height: 100dvh;
+        min-height: 100svh;
+        min-height: 100dvh;
+        max-height: none;
+        aspect-ratio: auto;
+        border-radius: 0;
+        box-shadow: none;
+        background: var(--camera-surface);
+      }
+      body.camera-mode .mobile-camera-top {
+        position: absolute;
+        z-index: 14;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: calc(env(safe-area-inset-top) + 12px) 16px 10px;
+        color: #fff;
+        pointer-events: none;
+      }
+      .mobile-camera-heading,
+      .mobile-camera-actions { display: flex; align-items: center; min-width: 0; pointer-events: auto; }
+      .mobile-camera-heading { gap: 10px; }
+      .mobile-camera-actions { gap: 16px; }
+      .mobile-camera-title {
+        min-width: 0;
+        max-width: min(54vw, 310px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 16px;
+        font-weight: 760;
+        letter-spacing: -.01em;
+        text-shadow: 0 1px 12px rgba(0,0,0,.55);
+      }
+      .camera-top-button {
+        display: grid;
+        place-items: center;
+        min-width: 24px;
+        min-height: 32px;
+        padding: 4px 1px;
+        border: 0;
+        background: transparent;
+        color: #fff;
+        font-weight: 760;
+        cursor: pointer;
+        filter: drop-shadow(0 1px 5px rgba(0,0,0,.45));
+      }
+      .camera-top-button svg { width: 22px; height: 22px; display: block; }
+      .camera-language { font-size: 12px; }
+      body.camera-mode .stage-top {
+        top: calc(env(safe-area-inset-top) + 58px);
+        left: 14px;
+        right: 14px;
+      }
+      body.camera-mode .stage-pill { background: var(--camera-ui); border: 1px solid rgba(255,255,255,.12); }
+      body.camera-mode .stage-pill:first-child { max-width: 58%; }
+      body.camera-mode .guide-instruction {
+        z-index: 11;
+        bottom: calc(env(safe-area-inset-bottom) + 188px);
+        width: min(520px, calc(100% - 32px));
+        border: 1px solid rgba(255,255,255,.14);
+        background: var(--camera-ui);
+      }
+      body.camera-mode .countdown-cancel { bottom: calc(env(safe-area-inset-bottom) + 168px); }
+      body.camera-mode .overlay-settings {
+        position: fixed;
+        z-index: 13;
+        left: 50%;
+        right: auto;
+        bottom: calc(env(safe-area-inset-bottom) + 142px);
+        width: min(330px, calc(100% - 42px));
+        transform: translateX(-50%);
+        margin: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,.16);
+        border-radius: 18px;
+        background: rgba(10,13,12,.54);
+        color: #fff;
+        backdrop-filter: blur(8px) saturate(1.05);
+        box-shadow: 0 9px 28px rgba(0,0,0,.18);
+      }
+      body.camera-mode .overlay-settings[open] {
+        width: min(430px, calc(100% - 24px));
+        bottom: calc(env(safe-area-inset-bottom) + 132px);
+      }
+      body.camera-mode .overlay-settings summary {
+        min-height: 44px;
+        padding: 8px 12px;
+      }
+      body.camera-mode .overlay-settings[open] {
+        max-height: min(58dvh, 470px);
+        margin-bottom: 0;
+      }
+      body.camera-mode .summary-title svg,
+      body.camera-mode .summary-title,
+      body.camera-mode .summary-value,
+      body.camera-mode .overlay-mode-label,
+      body.camera-mode .overlay-mode-hint,
+      body.camera-mode .range-value,
+      body.camera-mode .guide-switch-copy span,
+      body.camera-mode .settings-actions .summary-value { color: rgba(255,255,255,.82); }
+      body.camera-mode .settings-grid {
+        max-height: calc(min(58dvh, 470px) - 44px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 4px 12px 14px;
+        border-top-color: rgba(255,255,255,.14);
+        scrollbar-color: rgba(255,255,255,.35) transparent;
+      }
+      body.camera-mode .settings-guide { border-color: rgba(255,255,255,.14); background: transparent; }
+      body.camera-mode .settings-subdivider { background: rgba(255,255,255,.14); }
+      body.camera-mode .guide-switch-row { border-color: rgba(255,255,255,.13); background: rgba(255,255,255,.07); }
+      body.camera-mode .overlay-mode-button {
+        border-color: rgba(255,255,255,.18);
+        background: rgba(255,255,255,.06);
+        color: rgba(255,255,255,.76);
+      }
+      body.camera-mode .overlay-mode-button[aria-pressed="true"] {
+        border-color: rgba(255,255,255,.45);
+        background: rgba(255,255,255,.16);
+        color: #fff;
+      }
+      body.camera-mode .overlay-settings input[type="range"] { accent-color: #fff; }
+      body.camera-mode .switch-track { border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.14); }
+      body.camera-mode .switch-control input:checked + .switch-track { border-color: #fff; background: var(--accent); }
+      body.camera-mode .settings-actions .button {
+        border-color: rgba(255,255,255,.2);
+        background: rgba(255,255,255,.08);
+        color: #fff;
+      }
+      body.camera-mode .camera-stage .shoot-dock {
+        position: absolute;
+        top: auto;
+        right: auto;
+        bottom: calc(env(safe-area-inset-bottom) + 18px);
+        left: 50%;
+        width: calc(100% - 28px);
+        max-width: 440px;
+        height: auto;
+        grid-template-columns: minmax(0, 1fr) 100px minmax(0, 1fr);
+        grid-template-rows: none;
+        padding: 6px;
+        border: 1px solid rgba(255,255,255,.18);
+        border-radius: 20px;
+        background: rgba(10,13,12,.56);
+        backdrop-filter: blur(8px) saturate(1.05);
+      }
+      body.camera-mode .camera-stage .dock-action { min-height: 56px; }
+      body.camera-mode .camera-stage .shutter-button { width: 72px; height: 72px; }
+      body.camera-mode .timer-popover { bottom: calc(100% + 9px); }
+      body.camera-mode .app-toast {
+        bottom: calc(env(safe-area-inset-bottom) + 178px);
+        border-color: rgba(255,255,255,.15);
+        background: rgba(15,18,16,.9);
+        color: #fff;
+        backdrop-filter: blur(10px);
+      }
+    }
+
+    @media (max-width: 390px) {
+      body.camera-mode .camera-stage .shoot-dock { gap: 2px; padding: 5px; grid-template-columns: 1fr 88px 1fr; }
+      body.camera-mode .camera-stage .dock-action { min-height: 52px; }
+      body.camera-mode .camera-stage .dock-action span,
+      body.camera-mode .camera-stage .shutter-wrap { font-size: 9px; }
+      body.camera-mode .overlay-settings { left: 50%; right: auto; transform: translateX(-50%); }
+      body.camera-mode .guide-instruction { bottom: calc(env(safe-area-inset-bottom) + 182px); }
+      body.camera-mode .mobile-camera-top { padding-left: 13px; padding-right: 13px; }
+    }
+
+    @media (orientation: landscape) and (max-height: 560px) and (max-width: 980px) {
+      body.camera-mode .mobile-camera-top { padding-top: calc(env(safe-area-inset-top) + 7px); padding-bottom: 5px; }
+      body.camera-mode .stage-top { top: calc(env(safe-area-inset-top) + 44px); }
+      body.camera-mode .guide-instruction {
+        left: 14px;
+        right: auto;
+        bottom: calc(env(safe-area-inset-bottom) + 92px);
+        width: min(390px, calc(100% - 200px));
+        transform: none;
+      }
+      body.camera-mode .camera-stage.settings-open .guide-instruction { transform: translateY(6px); }
+      body.camera-mode .overlay-settings {
+        left: 14px;
+        right: auto;
+        bottom: calc(env(safe-area-inset-bottom) + 18px);
+        width: min(390px, calc(100% - 200px));
+        transform: none;
+      }
+      body.camera-mode .camera-stage .shoot-dock {
+        left: auto;
+        right: calc(env(safe-area-inset-right) + 12px);
+        bottom: calc(env(safe-area-inset-bottom) + 12px);
+        transform: none;
+        width: 166px;
+        max-width: none;
+        grid-template-columns: 1fr 72px 1fr;
+        gap: 1px;
+        padding: 5px;
+      }
+      body.camera-mode .camera-stage .dock-action { min-height: 54px; }
+      body.camera-mode .camera-stage .dock-action span,
+      body.camera-mode .camera-stage .shutter-wrap { font-size: 8px; }
+      body.camera-mode .camera-stage .shutter-button { width: 56px; height: 56px; }
+      body.camera-mode .countdown-cancel { bottom: calc(env(safe-area-inset-bottom) + 84px); }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
     }
@@ -444,7 +791,7 @@
           </svg>
         </div>
         <div class="brand-copy">
-          <h1 class="brand-name"><span id="headerAppName">同じ構図で撮る</span><span class="version-badge" id="versionBadge">v1.0.0</span></h1>
+          <h1 class="brand-name"><span id="headerAppName">同じ構図で撮る</span><span class="version-badge" id="versionBadge">v1.1.0</span></h1>
           <p class="brand-meta" data-i18n="brandMeta">写真を重ねて構図を合わせる · 完全ローカル処理</p>
         </div>
       </div>
@@ -470,14 +817,24 @@
     </section>
 
     <!-- APP:BEGIN -->
+    <section class="start-overview" id="startOverview" aria-label="撮影の流れ" data-i18n-aria-label="startFlowLabel">
+      <div class="start-flow">
+        <div class="start-flow-item"><div class="start-flow-top"><span class="start-flow-number">1</span><strong data-i18n="startFlow1Title">元写真を選ぶ</strong></div><p data-i18n="startFlow1Body">昔の写真やBefore写真を読み込みます</p></div>
+        <div class="start-flow-item"><div class="start-flow-top"><span class="start-flow-number">2</span><strong data-i18n="startFlow2Title">重ねて構図を合わせる</strong></div><p data-i18n="startFlow2Body">Ghost / Splitや構図ガイドを見ながら撮影します</p></div>
+        <div class="start-flow-item"><div class="start-flow-top"><span class="start-flow-number">3</span><strong data-i18n="startFlow3Title">比べて保存する</strong></div><p data-i18n="startFlow3Body">Before / After、比較画像・HTMLで残せます</p></div>
+      </div>
+      <div class="start-capabilities" data-i18n="startCapabilities">Ghost / Outline / Blink / Split · 構図ガイド · タイマー · 比較HTML</div>
+    </section>
+
     <section id="emptyScreen" class="card start-card" aria-labelledby="chooseTitle">
+      <span class="step-label start-step-label" data-i18n="step1">STEP 1</span>
       <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-describedby="dropDescription">
         <div class="drop-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m4 17 5-5 3.5 3.5 2.2-2.2L20 18"/></svg>
         </div>
         <div>
           <h3 class="drop-title" id="chooseTitle" data-i18n="chooseTitle">同じ構図で撮り直したい写真を選んでください</h3>
-          <p class="drop-body" id="dropDescription" data-i18n="chooseBody">写真を選ぶだけではカメラを起動しません。選んだ写真を確認してから撮影を始められます。</p>
+          <p class="drop-body" id="dropDescription" data-i18n="chooseBody">元写真を重ねて構図を合わせ、撮影後はBefore / Afterで見比べて保存できます。</p>
         </div>
         <button class="button primary" id="chooseButton" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h6l2 2h8v9H4z"/><path d="M12 12v4m-2-2h4"/></svg>
@@ -510,12 +867,15 @@
         </div>
         <button class="button primary" id="startCameraButton" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.3-2h7.4L17 8h3v10H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
-          <span data-i18n="startCamera">カメラを開始</span>
+          <span data-i18n="startCamera">撮影を開始</span>
         </button>
-        <button class="button" id="changeReferenceButton" type="button" data-i18n="changeReference">別の写真を選ぶ</button>
+        <button class="button" id="changeReferenceButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v13H3z"/><path d="m5 16 4-4 3 3 2-2 5 4"/></svg>
+          <span data-i18n="changeReference">別の写真を選ぶ</span>
+        </button>
         <div class="privacy-line">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V8a4 4 0 0 1 8 0v2"/><rect x="5" y="10" width="14" height="10" rx="2"/></svg>
-          <span data-i18n="permissionNote">「カメラを開始」を押したときだけカメラ権限を求めます。</span>
+          <span data-i18n="permissionNote">「撮影を開始」を押したときだけカメラ権限を求めます。</span>
         </div>
       </aside>
     </section>
@@ -533,8 +893,22 @@
         <video id="cameraVideo" autoplay playsinline muted></video>
         <img class="ghost-overlay" id="ghostOverlay" alt="" draggable="false">
         <img class="outline-overlay" id="outlineOverlay" alt="" draggable="false" hidden>
-        <div class="split-divider" id="splitDivider" hidden aria-hidden="true"></div>
+        <div class="split-divider" id="splitDivider" hidden role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" data-i18n-aria-label="splitPosition" aria-label="境界位置"></div>
         <div class="stage-shade"></div>
+        <div class="mobile-camera-top camera-ui-control">
+          <div class="mobile-camera-heading">
+            <button class="camera-top-button" id="mobileBackButton" type="button" data-i18n-aria-label="backToReference" aria-label="元写真へ戻る">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <div class="mobile-camera-title" id="mobileCameraTitle">同じ構図で撮る</div>
+          </div>
+          <div class="mobile-camera-actions">
+            <button class="camera-top-button camera-language" id="mobileLanguageButton" type="button">EN</button>
+            <button class="camera-top-button" id="mobileHelpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.6 2.6 0 1 1 4.3 2c-1 .7-1.9 1.1-1.9 2.5M12 17h.01"/></svg>
+            </button>
+          </div>
+        </div>
         <div class="stage-top">
           <div class="stage-pill">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="m5 17 4-4 3 3 2-2 5 4"/></svg>
@@ -549,9 +923,31 @@
         <div class="countdown-overlay" id="countdownOverlay" hidden aria-live="assertive"><div class="countdown-number" id="countdownNumber">3</div></div>
         <button class="countdown-cancel" id="countdownCancelButton" type="button" hidden data-i18n="cancelTimer">タイマーをキャンセル</button>
         <div class="capture-flash"></div>
+      <div class="shoot-dock camera-ui-control" aria-label="Camera actions">
+        <button class="dock-action" id="switchCameraButton" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.2-2h7.6L17 8h3v10H4z"/><path d="M9 13a3 3 0 0 0 5.3 1.9M15 12a3 3 0 0 0-5.3-1.9"/><path d="m14 9 .3 1.8L16 10m-6 7-.3-1.8L8 16"/></svg>
+          <span data-i18n="switchCamera">カメラ切替</span>
+        </button>
+        <div class="shutter-wrap">
+          <button class="shutter-button" id="shutterButton" type="button" data-i18n-aria-label="takePhoto" aria-label="撮影"><span class="sr-only" data-i18n="takePhoto">撮影</span></button>
+          <span data-i18n="takePhoto">撮影</span>
+        </div>
+        <div class="timer-control">
+          <button class="dock-action" id="timerButton" type="button" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M12 6V3m-3 0h6m-3 10 3-2"/></svg>
+            <span id="timerButtonLabel" data-i18n="timerOff">タイマー OFF</span>
+          </button>
+          <div class="timer-popover" id="timerPopover" hidden role="radiogroup" data-i18n-aria-label="timerLabel">
+            <button class="timer-option" type="button" data-timer="0" role="radio" aria-checked="true" data-i18n="timerOff">タイマー OFF</button>
+            <button class="timer-option" type="button" data-timer="3" role="radio" aria-checked="false">3秒</button>
+            <button class="timer-option" type="button" data-timer="5" role="radio" aria-checked="false">5秒</button>
+            <button class="timer-option" type="button" data-timer="10" role="radio" aria-checked="false">10秒</button>
+          </div>
+        </div>
+      </div>
       </div>
 
-      <details class="overlay-settings" id="overlaySettings">
+      <details class="overlay-settings camera-ui-control" id="overlaySettings">
         <summary>
           <span class="summary-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h6M14 17h6"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="12" cy="17" r="2"/></svg>
@@ -570,9 +966,15 @@
             </div>
             <div class="overlay-mode-hint" id="overlayModeHint" data-i18n="overlayModeGhostHint">元写真を半透明で重ねます</div>
           </div>
+          <div class="reset-overlay-field">
+            <button class="button" id="resetOverlayButton" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.3 5.7"/><path d="M4 5v6h6"/></svg>
+              <span data-i18n="resetOverlay">位置をリセット</span>
+            </button>
+          </div>
           <div class="range-field split-position-field" id="splitPositionField" hidden>
             <div class="range-head"><label for="splitRange" data-i18n="splitPosition">境界位置</label><span class="range-value" id="splitValue">50%</span></div>
-            <input id="splitRange" type="range" min="15" max="85" step="1" value="50">
+            <input id="splitRange" type="range" min="0" max="100" step="1" value="50">
           </div>
           <div class="range-field">
             <div class="range-head"><label for="opacityRange" data-i18n="opacity">透明度</label><span class="range-value" id="opacityValue">50%</span></div>
@@ -605,42 +1007,22 @@
           </div>
           <div class="settings-actions">
             <span class="summary-value" data-i18n="guideCaution">一致度は構図の近さの目安です</span>
-            <button class="button" id="resetOverlayButton" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.3 5.7"/><path d="M4 5v6h6"/></svg>
-              <span data-i18n="resetOverlay">位置をリセット</span>
-            </button>
           </div>
         </div>
       </details>
 
-      <div class="shoot-dock" aria-label="Camera actions">
-        <button class="dock-action" id="switchCameraButton" type="button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.2-2h7.6L17 8h3v10H4z"/><path d="M9 13a3 3 0 0 0 5.3 1.9M15 12a3 3 0 0 0-5.3-1.9"/><path d="m14 9 .3 1.8L16 10m-6 7-.3-1.8L8 16"/></svg>
-          <span data-i18n="switchCamera">カメラ切替</span>
-        </button>
-        <div class="shutter-wrap">
-          <button class="shutter-button" id="shutterButton" type="button" data-i18n-aria-label="takePhoto" aria-label="撮影"><span class="sr-only" data-i18n="takePhoto">撮影</span></button>
-          <span data-i18n="takePhoto">撮影</span>
-        </div>
-        <div class="timer-control">
-          <button class="dock-action" id="timerButton" type="button" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7"/><path d="M12 6V3m-3 0h6m-3 10 3-2"/></svg>
-            <span id="timerButtonLabel" data-i18n="timerOff">タイマー OFF</span>
-          </button>
-          <div class="timer-popover" id="timerPopover" hidden role="radiogroup" data-i18n-aria-label="timerLabel">
-            <button class="timer-option" type="button" data-timer="0" role="radio" aria-checked="true" data-i18n="timerOff">タイマー OFF</button>
-            <button class="timer-option" type="button" data-timer="3" role="radio" aria-checked="false">3秒</button>
-            <button class="timer-option" type="button" data-timer="5" role="radio" aria-checked="false">5秒</button>
-            <button class="timer-option" type="button" data-timer="10" role="radio" aria-checked="false">10秒</button>
-          </div>
-        </div>
-      </div>
+
     </section>
 
     <section id="resultScreen" class="result-grid" hidden aria-labelledby="resultTitle">
       <article class="card compare-card">
         <div class="compare-head">
-          <div><h3 id="resultTitle" data-i18n="resultTitle">撮影できました</h3><p data-i18n="resultBody">画像上の境界を動かして元写真と新しい写真を比較できます。</p></div>
+          <div><h3 id="resultTitle" data-i18n="resultTitle">撮影できました</h3><p data-i18n="resultBody">画像上の境界を動かして元写真と撮影した写真を比較できます。</p></div>
+        </div>
+        <div class="result-mode-bar" role="group" data-i18n-aria-label="resultDisplayMode" aria-label="比較表示">
+          <button class="result-mode-button" type="button" data-result-mode="split" aria-pressed="true">Split</button>
+          <button class="result-mode-button" type="button" data-result-mode="ghost" aria-pressed="false">Ghost</button>
+          <button class="result-mode-button" type="button" data-result-mode="blink" aria-pressed="false">Blink</button>
         </div>
         <div class="compare-frame" id="compareFrame" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" data-i18n-aria-label="compareSlider" aria-label="Before / After比較">
           <img id="afterImage" alt="">
@@ -650,11 +1032,11 @@
           <div class="compare-divider"></div>
           <div class="compare-handle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3m8-6 3 3-3 3"/></svg></div>
         </div>
-        <p class="compare-drag-hint" data-i18n="compareDragHint">画像上のハンドルを左右に動かして比較できます。</p>
+        <p class="compare-drag-hint" id="compareDragHint" data-i18n="compareDragHint">画像上のハンドルを左右に動かして比較できます。</p>
       </article>
       <aside class="card result-actions">
         <span class="step-label" data-i18n="step5">STEP 5</span>
-        <h3 data-i18n="saveTitle">新しい写真を保存</h3>
+        <h3 data-i18n="saveTitle">撮影した写真を保存</h3>
         <p data-i18n="saveBody">写真は自動保存されません。必要な写真だけ端末へ保存してください。</p>
         <label class="export-field" for="outputFilename">
           <span class="export-label" data-i18n="outputFilename">出力ファイル名</span>
@@ -667,7 +1049,7 @@
         <div class="export-actions">
           <button class="button primary" id="savePhotoButton" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4"/><path d="M5 19h14"/></svg>
-            <span data-i18n="savePhoto">新しい写真を保存</span>
+            <span data-i18n="savePhoto">撮影した写真を保存</span>
           </button>
           <button class="button" id="saveCompareImageButton" type="button">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16M6 15l2-2 2 2m4 0 2-2 2 2"/></svg>
@@ -699,6 +1081,35 @@
 
   <footer><span id="footerName">Photo Re-Enactor</span> · MIT License · <span data-i18n="footer">写真やカメラ映像を外部へ送信しません</span></footer>
 
+  <nav class="mobile-flow-bar" id="mobileFlowBar" hidden aria-label="主な操作" data-i18n-aria-label="mobileActions">
+    <div class="mobile-flow-group" data-mobile-phase="empty">
+      <button class="mobile-flow-action primary" id="mobileChooseButton" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h6l2 2h8v9H4z"/><path d="M12 12v4m-2-2h4"/></svg>
+        <span data-i18n="chooseButton">元写真を選ぶ</span>
+      </button>
+    </div>
+    <div class="mobile-flow-group" data-mobile-phase="ready" hidden>
+      <button class="mobile-flow-action secondary" id="mobileChangeReferenceButton" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v13H3z"/><path d="m5 16 4-4 3 3 2-2 5 4"/></svg>
+        <span data-i18n="changeReference">別の写真を選ぶ</span>
+      </button>
+      <button class="mobile-flow-action primary" id="mobileStartCameraButton" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.3-2h7.4L17 8h3v10H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        <span data-i18n="startCamera">撮影を開始</span>
+      </button>
+    </div>
+    <div class="mobile-flow-group" data-mobile-phase="result" hidden>
+      <button class="mobile-flow-action secondary" id="mobileRetakeButton" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.2-2h7.6L17 8h3v10H4z"/><path d="M8 14a4 4 0 0 0 7 2M16 12a4 4 0 0 0-7-2"/></svg>
+        <span data-i18n="retake">撮り直す</span>
+      </button>
+      <button class="mobile-flow-action primary" id="mobileSavePhotoButton" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4"/><path d="M5 19h14"/></svg>
+        <span data-i18n="savePhoto">撮影した写真を保存</span>
+      </button>
+    </div>
+  </nav>
+
   <div class="app-toast" id="appToast" role="status" aria-live="polite" aria-atomic="true">
     <span class="app-toast-message" id="appToastMessage"></span>
     <button class="app-toast-action" id="appToastAction" type="button" hidden></button>
@@ -716,17 +1127,17 @@
       <h3 data-i18n="helpBasicsTitle">基本操作</h3>
       <ol>
         <li data-i18n="helpStep1">同じ構図で撮り直したい元写真を選びます。この時点ではカメラを起動しません。</li>
-        <li data-i18n="helpStep2">元写真を確認して「カメラを開始」を押します。ライブ映像に元写真が半透明で重なります。</li>
+        <li data-i18n="helpStep2">元写真を確認して「撮影を開始」を押します。ライブ映像に元写真が半透明で重なります。</li>
         <li data-i18n="helpStep3">元写真を1本指で移動、2本指で拡大・回転して構図を合わせます。PCではドラッグとマウスホイールも使えます。</li>
-        <li data-i18n="helpStep4">構図が合ったら撮影します。撮影後はBefore / Afterを比較して、新しい写真をJPEGで保存できます。</li>
+        <li data-i18n="helpStep4">構図が合ったら撮影します。撮影後はBefore / Afterを比較して、撮影した写真をJPEGで保存できます。</li>
       </ol>
       <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
       <p data-i18n="helpPrivacyBody">元写真、カメラ映像、撮影画像はブラウザ内だけで処理します。このアプリから外部サーバーへ送信せず、写真をブラウザ内へ自動保存もしません。</p>
       <h3 data-i18n="helpNotesTitle">注意事項</h3>
       <ul>
         <li data-i18n="helpNoteCamera">カメラはブラウザのセキュリティ制約により、HTTPSまたはlocalhostでの利用が基本です。単一HTMLを直接開いた場合はカメラを利用できないことがあります。</li>
-        <li data-i18n="helpNoteManual">v0.1では自動構図解析はまだありません。元写真の重ね表示と手動調整で構図を合わせます。</li>
-        <li data-i18n="helpNoteSave">撮影画像は自動保存されません。必要な写真は撮影後に「新しい写真を保存」を押してください。</li>
+        <li data-i18n="helpNoteManual">自動ガイドが使えない場合でも、元写真の重ね表示と手動調整でそのまま撮影できます。</li>
+        <li data-i18n="helpNoteSave">撮影画像は自動保存されません。必要な写真は撮影後に「撮影した写真を保存」を押してください。</li>
       </ul>
       <p class="dialog-note" data-i18n="helpOffline">実行時の外部通信はありません。写真とカメラ映像は完全ローカル処理です。</p>
       <!-- APP:HELP:END -->
@@ -739,9 +1150,20 @@
         <h2 id="exportHtmlTitle" data-i18n="exportHtmlTitle">比較HTMLを保存しますか？</h2>
         <button class="dialog-close" id="closeExportHtmlButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
       </div>
-      <p data-i18n="exportHtmlPrivacy">比較HTMLには元写真と新しい写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。</p>
+      <p data-i18n="exportHtmlPrivacy">比較HTMLには元写真と撮影した写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。</p>
       <p class="dialog-note" data-i18n="exportHtmlOffline">HTMLは外部通信なしで単体表示できます。</p>
       <div class="confirm-actions"><button class="button" id="cancelExportHtmlButton" type="button" data-i18n="cancel">キャンセル</button><button class="button primary" id="confirmExportHtmlButton" type="button" data-i18n="saveCompareHtml">比較HTMLを保存</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="retakeDialog" aria-labelledby="retakeDialogTitle">
+    <div class="dialog-body">
+      <div class="dialog-head">
+        <h2 id="retakeDialogTitle" data-i18n="retakeConfirmTitle">撮り直しますか？</h2>
+        <button class="dialog-close" id="closeRetakeDialogButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <p data-i18n="retakeConfirmBody">撮影画面へ戻ります。現在の結果は次の撮影が完了するまで保持します。</p>
+      <div class="confirm-actions"><button class="button" id="cancelRetakeButton" type="button" data-i18n="cancel">キャンセル</button><button class="button primary" id="confirmRetakeButton" type="button" data-i18n="retake">撮り直す</button></div>
     </div>
   </dialog>
 
@@ -749,8 +1171,8 @@
     (() => {
       'use strict';
 
-      const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Photo Re-Enactor","nameJa":"同じ構図で撮る","slug":"photo-re-enactor","version":"1.0.0","description":"Use a reference photo as a ghost overlay to retake a scene from nearly the same composition, entirely in the browser.","descriptionJa":"元写真をカメラ映像へ重ね、できるだけ同じ構図で撮り直すためのブラウザツールです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-photo-re-enactor"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":8,"selfExtractWarningMb":4}}};
-      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-09-01T06:55:50.3958499Z","app":{"name":"Photo Re-Enactor","slug":"photo-re-enactor","version":"1.0.0"},"dependencies":[]};
+      const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Photo Re-Enactor","nameJa":"同じ構図で撮る","slug":"photo-re-enactor","version":"1.1.0","description":"Use a reference photo as a ghost overlay to retake a scene from nearly the same composition, entirely in the browser.","descriptionJa":"元写真をカメラ映像へ重ね、できるだけ同じ構図で撮り直すためのブラウザツールです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-photo-re-enactor"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":8,"selfExtractWarningMb":4}}};
+      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-09-02T01:39:25.8531521Z","app":{"name":"Photo Re-Enactor","slug":"photo-re-enactor","version":"1.1.0"},"dependencies":[]};
       // Asset payloads are Base64 exactly once. The JSON bundle itself is embedded directly.
       const assetBundle = {"schemaVersion":2,"dependencies":{}};
       const blobUrls = new Set();
@@ -809,26 +1231,26 @@
       const translations = {
         ja: {
           brandMeta: '写真を重ねて構図を合わせる · 完全ローカル処理', introTitle: '同じ構図で、もう一度撮る', introBody: '昔の写真やBefore写真をカメラ映像へ重ねて、できるだけ同じ構図で撮影できます。', localBadge: '完全ローカル処理',
-          chooseTitle: '同じ構図で撮り直したい写真を選んでください', chooseBody: '写真を選ぶだけではカメラを起動しません。選んだ写真を確認してから撮影を始められます。', chooseButton: '元写真を選ぶ', formats: 'JPEG / PNG / WebP · 最大50 MB', choosePrivacy: '写真はこの端末内だけで処理します。',
-          step2: 'STEP 2', readyTitle: '元写真を確認しました', readyBody: 'この写真をライブ映像へ重ねて構図を合わせます。カメラ映像は外部へ送信されません。', startCamera: 'カメラを開始', startingCamera: 'カメラを準備中…', changeReference: '別の写真を選ぶ', permissionNote: '「カメラを開始」を押したときだけカメラ権限を求めます。', details: '詳細',
+          chooseTitle: '同じ構図で撮り直したい写真を選んでください', chooseBody: '元写真を重ねて構図を合わせ、撮影後はBefore / Afterで見比べて保存できます。', chooseButton: '元写真を選ぶ', formats: 'JPEG / PNG / WebP · 最大50 MB', choosePrivacy: '写真はこの端末内だけで処理します。', startFlowLabel: '撮影の流れ', startFlow1Title: '元写真を選ぶ', startFlow1Body: '昔の写真やBefore写真を読み込みます', startFlow2Title: '重ねて構図を合わせる', startFlow2Body: 'Ghost / Splitや構図ガイドを見ながら撮影します', startFlow3Title: '比べて保存する', startFlow3Body: 'Before / After、比較画像・HTMLで残せます', startCapabilities: 'Ghost / Outline / Blink / Split · 構図ガイド · タイマー · 比較HTML', mobileActions: '主な操作',
+          step1: 'STEP 1', step2: 'STEP 2', readyTitle: '元写真を確認しました', readyBody: 'この写真をライブ映像へ重ねて構図を合わせます。カメラ映像は外部へ送信されません。', startCamera: '撮影を開始', startingCamera: 'カメラを準備中…', changeReference: '別の写真を選ぶ', permissionNote: '「撮影を開始」を押したときだけカメラ権限を求めます。', details: '詳細',
           backToReference: '元写真へ戻る', cameraHint: 'ガイドに合わせてカメラを動かします', gestureHint: '必要なら元写真も手動調整できます', manualAdjust: '元写真を手動調整', manualAdjustHint: '必要なときだけONにしてドラッグ・ピンチします', manualAdjustActive: '元写真を調整中', manualAdjustActiveSub: '調整後にOFFにすると構図ガイドを再開します', adjustOverlay: '重ね方を調整', overlayMode: '表示モード', overlayModeGhostHint: '元写真を半透明で重ねます', overlayModeOutlineHint: '元写真の主な輪郭だけを表示します', overlayModeBlinkHint: '元写真とライブ映像をゆっくり交互に表示します', overlayModeBlinkReducedHint: '動きを減らす設定が有効なため、点滅を停止しています', overlayModeSplitHint: '元写真とライブ映像を境界で見比べます', splitPosition: '境界位置', opacity: '透明度', scale: '元写真の大きさ', rotation: '元写真の傾き', resetOverlay: '位置をリセット', switchCamera: 'カメラ切替', takePhoto: '撮影',
           guideToggle: '構図ガイド', guideToggleHint: '元写真とのずれを目安として案内します', guideCaution: '一致度は構図の近さの目安です', guidePreparing: '構図を確認しています…', guidePreparingShort: '構図を確認中…', guideOff: '構図ガイドはOFFです', guideUnavailable: '自動で構図を確認できません', guideUnavailableSub: '重ね表示を使って手動で合わせられます', guideClose: 'ほぼ同じ構図です', guideLeft: 'カメラを少し左へ', guideRight: 'カメラを少し右へ', guideUp: 'カメラを少し上へ', guideDown: 'カメラを少し下へ', guideCloser: '少し近づいてください', guideFarther: '少し離れてください', guideTiltLeft: 'カメラを左へ傾けてください', guideTiltRight: 'カメラを右へ傾けてください', guideScore: '構図の一致 {score}%',
           timerLabel: '撮影タイマー', timerOff: 'タイマー OFF', timerSeconds: '{seconds}秒', cancelTimer: 'タイマーをキャンセル', timerCancelled: 'タイマーをキャンセルしました',
-          resultTitle: '撮影できました', resultBody: '画像上の境界を動かして元写真と新しい写真を比較できます。', compareSlider: 'Before / After比較', compareDragHint: '画像上のハンドルを左右に動かして比較できます。', step5: 'STEP 5', saveTitle: '撮影結果を保存', saveBody: '写真は自動保存されません。必要な形式だけ端末へ保存してください。', outputFilename: '出力ファイル名', outputFilenameHint: '拡張子は保存形式に応じて自動で付きます', savePhoto: '新しい写真を保存', saveCompareImage: '比較画像を保存', saveCompareHtml: '比較HTMLを保存', comparisonComment: '比較HTMLのコメント（任意）', comparisonCommentPlaceholder: '例：リフォーム後 2026年9月', retake: '撮り直す', newReference: '別の元写真にする', comparisonSaved: '比較画像を保存しました', htmlSaved: '比較HTMLを保存しました',
-          exportHtmlTitle: '比較HTMLを保存しますか？', exportHtmlPrivacy: '比較HTMLには元写真と新しい写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。', exportHtmlOffline: 'HTMLは外部通信なしで単体表示できます。', cancel: 'キャンセル',
-          helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: '同じ構図で撮り直したい元写真を選びます。この時点ではカメラを起動しません。', helpStep2: '元写真を確認して「カメラを開始」を押します。Ghost / Outline / Blink / Splitから見やすい重ね方を選べます。', helpStep3: '構図ガイドが使える場面では、左右・上下・距離・傾きのうち現在もっとも大きいずれを1つ案内します。ガイドをOFFにして手動だけでも撮影できます。', helpStep4: '必要ならタイマーを使って撮影します。撮影後はBefore / Afterを比較し、新しい写真・比較画像・比較HTMLを保存できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '元写真、カメラ映像、撮影画像はブラウザ内だけで処理します。このアプリから外部サーバーへ送信せず、写真をブラウザ内へ自動保存もしません。', helpNotesTitle: '注意事項', helpNoteCamera: 'カメラはブラウザのセキュリティ制約により、HTTPSまたはlocalhostでの利用が基本です。単一HTMLを直接開いた場合はカメラを利用できないことがあります。', helpNoteManual: '自動ガイドは画像の特徴が少ない場面、暗所、ぼけ、大きく変化した場面などでは利用できないことがあります。その場合も重ね表示で手動撮影できます。', helpNoteSave: '構図の一致は写真品質の評価ではなく、元写真との構図の近さの目安です。撮影をブロックする条件には使いません。', helpOffline: '実行時の外部通信はありません。写真とカメラ映像は完全ローカル処理です。',
-          footer: '写真やカメラ映像を外部へ送信しません', invalidFileTitle: '写真を読み込めませんでした', invalidType: 'JPEG / PNG / WebP の写真を選んでください。', tooLarge: '50 MB以下の写真を選んでください。', decodeFailed: '写真を表示できませんでした。ファイルが破損している可能性があります。', cameraUnavailableTitle: 'カメラを使用できませんでした', cameraPermission: 'ブラウザのカメラ許可を確認してください。元写真はそのまま確認できます。', cameraMissing: '利用できるカメラが見つかりませんでした。', cameraSecure: 'この環境ではカメラ撮影を利用できません。HTTPSまたはlocalhostで開いてください。', cameraGeneric: 'カメラを開始できませんでした。ブラウザまたは端末のカメラ設定を確認してください。', cameraSwitchFailed: 'カメラを切り替えられませんでした。元のカメラへ戻しました。', captureFailed: '撮影画像を作成できませんでした。もう一度撮影してください。', saved: '写真を保存しました', overlayReset: '元写真の位置をリセットしました', cameraOnlyOne: 'この端末では切り替え可能な別のカメラを確認できませんでした。'
+          resultDisplayMode: '比較表示', retakeConfirmTitle: '撮り直しますか？', retakeConfirmBody: '撮影画面へ戻ります。現在の結果は次の撮影が完了するまで保持します。', downloadBefore: '元写真を保存', downloadAfter: '撮影した写真を保存', resultTitle: '撮影できました', resultBody: '画像上の境界を動かして元写真と撮影した写真を比較できます。', compareSlider: 'Before / After比較', compareDragHint: '画像上のハンドルを左右に動かして比較できます。', step5: 'STEP 5', saveTitle: '撮影結果を保存', saveBody: '写真は自動保存されません。必要な形式だけ端末へ保存してください。', outputFilename: '出力ファイル名', outputFilenameHint: '拡張子は保存形式に応じて自動で付きます', savePhoto: '撮影した写真を保存', saveCompareImage: '比較画像を保存', saveCompareHtml: '比較HTMLを保存', comparisonComment: '比較HTMLのコメント（任意）', comparisonCommentPlaceholder: '例：リフォーム後 2026年9月', retake: '撮り直す', newReference: '別の元写真にする', comparisonSaved: '比較画像を保存しました', htmlSaved: '比較HTMLを保存しました',
+          exportHtmlTitle: '比較HTMLを保存しますか？', exportHtmlPrivacy: '比較HTMLには元写真と撮影した写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。', exportHtmlOffline: 'HTMLは外部通信なしで単体表示できます。', cancel: 'キャンセル',
+          helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: '同じ構図で撮り直したい元写真を選びます。この時点ではカメラを起動しません。', helpStep2: '元写真を確認して「撮影を開始」を押します。Ghost / Outline / Blink / Splitから見やすい重ね方を選べます。', helpStep3: '構図ガイドが使える場面では、左右・上下・距離・傾きのうち現在もっとも大きいずれを1つ案内します。ガイドをOFFにして手動だけでも撮影できます。', helpStep4: '必要ならタイマーを使って撮影します。撮影後はBefore / Afterを比較し、撮影した写真・比較画像・比較HTMLを保存できます。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '元写真、カメラ映像、撮影画像はブラウザ内だけで処理します。このアプリから外部サーバーへ送信せず、写真をブラウザ内へ自動保存もしません。', helpNotesTitle: '注意事項', helpNoteCamera: 'カメラはブラウザのセキュリティ制約により、HTTPSまたはlocalhostでの利用が基本です。単一HTMLを直接開いた場合はカメラを利用できないことがあります。', helpNoteManual: '自動ガイドは画像の特徴が少ない場面、暗所、ぼけ、大きく変化した場面などでは利用できないことがあります。その場合も重ね表示で手動撮影できます。', helpNoteSave: '構図の一致は写真品質の評価ではなく、元写真との構図の近さの目安です。撮影をブロックする条件には使いません。', helpOffline: '実行時の外部通信はありません。写真とカメラ映像は完全ローカル処理です。',
+          footer: '写真やカメラ映像を外部へ送信しません', invalidFileTitle: '写真を読み込めませんでした', invalidType: 'JPEG / PNG / WebP の写真を選んでください。', tooLarge: '50 MB以下の写真を選んでください。', decodeFailed: '写真を表示できませんでした。ファイルが破損している可能性があります。', cameraUnavailableTitle: 'カメラを使用できませんでした', cameraPermission: 'ブラウザのカメラ許可を確認してください。元写真はそのまま確認できます。', cameraMissing: '利用できるカメラが見つかりませんでした。', cameraSecure: 'この環境ではカメラ撮影を利用できません。HTTPSまたはlocalhostで開いてください。', cameraGeneric: '撮影を開始できませんでした。ブラウザまたは端末のカメラ設定を確認してください。', cameraSwitchFailed: 'カメラを切り替えられませんでした。元のカメラへ戻しました。', captureFailed: '撮影画像を作成できませんでした。もう一度撮影してください。', saved: '写真を保存しました', overlayReset: '元写真の位置をリセットしました', cameraOnlyOne: 'この端末では切り替え可能な別のカメラを確認できませんでした。'
         },
         en: {
           brandMeta: 'Reference overlay · Fully local processing', introTitle: 'Retake it from the same composition', introBody: 'Overlay an old or Before photo on the live camera and line up the scene before taking a new photo.', localBadge: 'Fully local processing',
-          chooseTitle: 'Choose the photo you want to recreate', chooseBody: 'Choosing a photo does not start the camera. You can review the reference first, then start shooting.', chooseButton: 'Choose reference photo', formats: 'JPEG / PNG / WebP · up to 50 MB', choosePrivacy: 'Your photo is processed only on this device.',
-          step2: 'STEP 2', readyTitle: 'Reference photo ready', readyBody: 'This photo will be placed over the live view so you can line up the composition. Camera video is not sent outside the browser.', startCamera: 'Start camera', startingCamera: 'Starting camera…', changeReference: 'Choose another photo', permissionNote: 'Camera permission is requested only after you press Start camera.', details: 'Details',
+          chooseTitle: 'Choose the photo you want to recreate', chooseBody: 'Overlay the reference, line up the composition, then compare and save the Before / After result.', chooseButton: 'Choose reference photo', formats: 'JPEG / PNG / WebP · up to 50 MB', choosePrivacy: 'Your photo is processed only on this device.', startFlowLabel: 'Capture flow', startFlow1Title: 'Choose a reference', startFlow1Body: 'Use an old photo or Before image', startFlow2Title: 'Line up and capture', startFlow2Body: 'Use Ghost / Split and the composition guide', startFlow3Title: 'Compare and save', startFlow3Body: 'Keep Before / After, an image, or comparison HTML', startCapabilities: 'Ghost / Outline / Blink / Split · composition guide · timer · comparison HTML', mobileActions: 'Main actions',
+          step1: 'STEP 1', step2: 'STEP 2', readyTitle: 'Reference photo ready', readyBody: 'This photo will be placed over the live view so you can line up the composition. Camera video is not sent outside the browser.', startCamera: 'Start shooting', startingCamera: 'Starting camera…', changeReference: 'Choose another photo', permissionNote: 'Camera permission is requested only after you press Start shooting.', details: 'Details',
           backToReference: 'Back to reference', cameraHint: 'Move the camera to follow the composition guide', gestureHint: 'You can manually adjust the reference if needed', manualAdjust: 'Adjust reference manually', manualAdjustHint: 'Turn this on only when you need to drag or pinch the reference', manualAdjustActive: 'Adjusting reference', manualAdjustActiveSub: 'Turn this off to resume composition guidance', adjustOverlay: 'Adjust overlay', overlayMode: 'Overlay mode', overlayModeGhostHint: 'Shows the reference as a transparent overlay', overlayModeOutlineHint: 'Shows the main reference edges only', overlayModeBlinkHint: 'Slowly alternates the reference and live view', overlayModeBlinkReducedHint: 'Blink is paused because reduced-motion is enabled', overlayModeSplitHint: 'Compares the reference and live view across a movable boundary', splitPosition: 'Split position', opacity: 'Opacity', scale: 'Reference size', rotation: 'Reference tilt', resetOverlay: 'Reset position', switchCamera: 'Switch camera', takePhoto: 'Take photo',
           guideToggle: 'Composition guide', guideToggleHint: 'Uses the reference to suggest the largest current offset', guideCaution: 'The match score is only a composition estimate', guidePreparing: 'Checking composition…', guidePreparingShort: 'Checking…', guideOff: 'Composition guide is off', guideUnavailable: 'Automatic composition check is unavailable', guideUnavailableSub: 'You can still line up the scene with the overlay', guideClose: 'Composition looks very close', guideLeft: 'Move the camera a little to the left', guideRight: 'Move the camera a little to the right', guideUp: 'Move the camera a little up', guideDown: 'Move the camera a little down', guideCloser: 'Move a little closer', guideFarther: 'Move a little farther away', guideTiltLeft: 'Tilt the camera a little to the left', guideTiltRight: 'Tilt the camera a little to the right', guideScore: 'Composition match {score}%',
           timerLabel: 'Capture timer', timerOff: 'Timer OFF', timerSeconds: '{seconds}s', cancelTimer: 'Cancel timer', timerCancelled: 'Timer cancelled',
-          resultTitle: 'Photo captured', resultBody: 'Drag the divider on the image to compare the reference with the new photo.', compareSlider: 'Before / After comparison', compareDragHint: 'Drag the handle on the image left or right to compare.', step5: 'STEP 5', saveTitle: 'Save capture results', saveBody: 'Nothing is saved automatically. Save only the formats you want to keep.', outputFilename: 'Output filename', outputFilenameHint: 'The extension is added automatically for each format', savePhoto: 'Save new photo', saveCompareImage: 'Save comparison image', saveCompareHtml: 'Save comparison HTML', comparisonComment: 'Comparison HTML comment (optional)', comparisonCommentPlaceholder: 'e.g. After renovation · Sep 2026', retake: 'Retake', newReference: 'Use another reference', comparisonSaved: 'Comparison image saved', htmlSaved: 'Comparison HTML saved',
-          exportHtmlTitle: 'Save comparison HTML?', exportHtmlPrivacy: 'The comparison HTML embeds both the reference and new photo. Sharing the HTML also shares those photos.', exportHtmlOffline: 'The HTML opens by itself without external network access.', cancel: 'Cancel',
-          helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Choose the reference photo you want to recreate. The camera does not start yet.', helpStep2: 'Review the reference and press Start camera. Choose Ghost, Outline, Blink, or Split depending on which view is easiest to line up.', helpStep3: 'When automatic guidance is available, it shows the single largest offset among left/right, up/down, distance, and tilt. You can turn the guide off and shoot manually at any time.', helpStep4: 'Use a timer if needed, then take the photo. After capture, compare Before / After and save the new photo, a comparison image, or a standalone comparison HTML.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Reference photos, camera video, and captured photos are processed only in the browser. This app does not send them to an external server or automatically store photos in browser storage.', helpNotesTitle: 'Notes', helpNoteCamera: 'Browser security rules normally require HTTPS or localhost for camera access. Camera capture may be unavailable when the standalone HTML is opened directly.', helpNoteManual: 'Automatic guidance may be unavailable for low-detail scenes, darkness, blur, or scenes that have changed substantially. Manual overlay shooting remains available.', helpNoteSave: 'The composition match is only an estimate of similarity to the reference composition, not a photo quality score, and it never blocks capture.', helpOffline: 'There are no runtime network connections. Photos and camera video are processed fully locally.',
+          resultDisplayMode: 'Comparison view', retakeConfirmTitle: 'Retake this photo?', retakeConfirmBody: 'Return to the camera. The current result is kept until a new capture finishes.', downloadBefore: 'Download Before', downloadAfter: 'Download After', resultTitle: 'Photo captured', resultBody: 'Drag the divider on the image to compare the reference with the captured photo.', compareSlider: 'Before / After comparison', compareDragHint: 'Drag the handle on the image left or right to compare.', step5: 'STEP 5', saveTitle: 'Save capture results', saveBody: 'Nothing is saved automatically. Save only the formats you want to keep.', outputFilename: 'Output filename', outputFilenameHint: 'The extension is added automatically for each format', savePhoto: 'Save captured photo', saveCompareImage: 'Save comparison image', saveCompareHtml: 'Save comparison HTML', comparisonComment: 'Comparison HTML comment (optional)', comparisonCommentPlaceholder: 'e.g. After renovation · Sep 2026', retake: 'Retake', newReference: 'Use another reference', comparisonSaved: 'Comparison image saved', htmlSaved: 'Comparison HTML saved',
+          exportHtmlTitle: 'Save comparison HTML?', exportHtmlPrivacy: 'The comparison HTML embeds both the reference and captured photo. Sharing the HTML also shares those photos.', exportHtmlOffline: 'The HTML opens by itself without external network access.', cancel: 'Cancel',
+          helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Choose the reference photo you want to recreate. The camera does not start yet.', helpStep2: 'Review the reference and press Start shooting. Choose Ghost, Outline, Blink, or Split depending on which view is easiest to line up.', helpStep3: 'When automatic guidance is available, it shows the single largest offset among left/right, up/down, distance, and tilt. You can turn the guide off and shoot manually at any time.', helpStep4: 'Use a timer if needed, then take the photo. After capture, compare Before / After and save the captured photo, a comparison image, or a standalone comparison HTML.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Reference photos, camera video, and captured photos are processed only in the browser. This app does not send them to an external server or automatically store photos in browser storage.', helpNotesTitle: 'Notes', helpNoteCamera: 'Browser security rules normally require HTTPS or localhost for camera access. Camera capture may be unavailable when the standalone HTML is opened directly.', helpNoteManual: 'Automatic guidance may be unavailable for low-detail scenes, darkness, blur, or scenes that have changed substantially. Manual overlay shooting remains available.', helpNoteSave: 'The composition match is only an estimate of similarity to the reference composition, not a photo quality score, and it never blocks capture.', helpOffline: 'There are no runtime network connections. Photos and camera video are processed fully locally.',
           footer: 'Photos and camera video are never sent outside this app', invalidFileTitle: 'Could not load the photo', invalidType: 'Choose a JPEG, PNG, or WebP photo.', tooLarge: 'Choose a photo smaller than 50 MB.', decodeFailed: 'The photo could not be displayed. The file may be damaged.', cameraUnavailableTitle: 'Could not use the camera', cameraPermission: 'Check this site’s camera permission in your browser. The reference photo is still available.', cameraMissing: 'No usable camera was found on this device.', cameraSecure: 'Camera capture is unavailable in this context. Open the app over HTTPS or localhost.', cameraGeneric: 'The camera could not start. Check your browser and device camera settings.', cameraSwitchFailed: 'Could not switch cameras. The previous camera was restored.', captureFailed: 'Could not create the captured image. Please try again.', saved: 'Photo saved', overlayReset: 'Reference position reset', cameraOnlyOne: 'No second camera is currently available to switch to.'
         }
       };
@@ -844,7 +1266,7 @@
         overlayMode: 'ghost', splitPosition: 50, blinkTimer: 0, blinkVisible: true, outlineUrl: '',
         guideEnabled: true, guideWorker: null, guideWorkerUrl: '', guideBusy: false, guideTimer: 0, guideGeneration: 0, guideReference: null, guideStable: null, guideFailures: 0, guideDisplayKey: null, guideCandidateKey: null, guideCandidateCount: 0,
         manualAdjust: false,
-        comparePosition: 50, comparePointerId: null, wakeLock: null
+        comparePosition: 50, comparePointerId: null, splitPointerId: null, resultCompareMode: 'split', resultBlinkTimer: 0, resultBlinkVisible: true, wakeLock: null
       };
 
       const storageKey = `${APP_CONFIG.slug}:language`;
@@ -885,15 +1307,25 @@
         document.querySelectorAll('[data-i18n-title]').forEach(element => { element.title = translate(element.dataset.i18nTitle); });
         document.querySelectorAll('[data-i18n-aria-label]').forEach(element => { element.setAttribute('aria-label', translate(element.dataset.i18nAriaLabel)); });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(element => { element.setAttribute('placeholder', translate(element.dataset.i18nPlaceholder)); });
-        $('#languageButton').textContent = state.language === 'ja' ? 'EN' : '日本語';
-        $('#languageButton').setAttribute('aria-label', state.language === 'ja' ? '英語に切り替え' : 'Switch to Japanese');
+        const languageLabel = state.language === 'ja' ? 'EN' : '日本語';
+        const languageAria = state.language === 'ja' ? '英語に切り替え' : 'Switch to Japanese';
+        $('#languageButton').textContent = languageLabel;
+        $('#languageButton').setAttribute('aria-label', languageAria);
+        $('#mobileLanguageButton').textContent = languageLabel;
+        $('#mobileLanguageButton').setAttribute('aria-label', languageAria);
         $('#headerAppName').textContent = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
+        $('#mobileCameraTitle').textContent = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
         document.title = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
         if (state.phase === 'starting-camera') $('#startCameraButton span').textContent = translate('startingCamera');
         else $('#startCameraButton span').textContent = translate('startCamera');
         updateTimerUi();
         renderGuideState(state.guideStable);
         renderOverlayMode();
+      }
+      function toggleLanguage() {
+        state.language = state.language === 'ja' ? 'en' : 'ja';
+        try { localStorage.setItem(storageKey, state.language); } catch {}
+        applyLanguage();
       }
 
       const AppToast = (() => {
@@ -910,8 +1342,17 @@
       window.AppToast = AppToast;
 
       function showScreen(name) {
+        if (name !== 'result') clearResultBlinkTimer();
         emptyScreen.hidden = name !== 'empty'; readyScreen.hidden = name !== 'ready'; cameraScreen.hidden = name !== 'camera'; resultScreen.hidden = name !== 'result';
+        $('#startOverview').hidden = name !== 'empty';
         document.body.classList.toggle('camera-mode', name === 'camera');
+        const mobileFlowBar = $('#mobileFlowBar');
+        const showMobileFlowBar = name !== 'camera';
+        document.body.classList.toggle('has-mobile-flow-bar', showMobileFlowBar);
+        if (mobileFlowBar) {
+          mobileFlowBar.hidden = !showMobileFlowBar;
+          mobileFlowBar.querySelectorAll('[data-mobile-phase]').forEach(group => { group.hidden = group.dataset.mobilePhase !== name; });
+        }
         $('#pageIntro').hidden = name === 'camera' || name === 'result';
         state.phase = name;
         window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
@@ -994,6 +1435,15 @@
         if (state.overlayMode === 'split') return 'overlayModeSplitHint';
         return 'overlayModeGhostHint';
       }
+      function setSplitPosition(value) {
+        const position = clamp(Number(value), 0, 100);
+        state.splitPosition = position;
+        splitRange.value = String(Math.round(position));
+        cameraStage.style.setProperty('--split-pos', `${position}%`);
+        $('#splitValue').textContent = `${Math.round(position)}%`;
+        splitDivider.setAttribute('aria-valuenow', String(Math.round(position)));
+        splitDivider.setAttribute('aria-valuetext', `${Math.round(position)}%`);
+      }
       function renderOverlayMode() {
         clearBlinkTimer();
         document.querySelectorAll('[data-overlay-mode]').forEach(button => button.setAttribute('aria-pressed', button.dataset.overlayMode === state.overlayMode ? 'true' : 'false'));
@@ -1002,8 +1452,7 @@
         splitDivider.hidden = state.overlayMode !== 'split';
         $('#splitPositionField').hidden = state.overlayMode !== 'split';
         cameraStage.classList.toggle('mode-split', state.overlayMode === 'split');
-        cameraStage.style.setProperty('--split-pos', `${state.splitPosition}%`);
-        $('#splitValue').textContent = `${state.splitPosition}%`;
+        setSplitPosition(state.splitPosition);
         $('#overlayModeHint').textContent = translate(overlayModeHintKey());
         if (state.overlayMode === 'blink') {
           ghostOverlay.hidden = false; ghostOverlay.style.visibility = 'visible';
@@ -1339,6 +1788,12 @@
         const constraints = { audio: false, video: { facingMode: { ideal: state.facing }, width: { ideal: 1920 }, height: { ideal: 1080 } } };
         return navigator.mediaDevices.getUserMedia(constraints);
       }
+      function syncCaptureControls() {
+        const cameraReady = Boolean(state.stream && cameraVideo.videoWidth && state.phase === 'camera' && !state.countdownActive);
+        shutterButton.disabled = !cameraReady;
+        $('#timerButton').disabled = !cameraReady;
+        switchCameraButton.disabled = !cameraReady || state.cameraCount === 1;
+      }
       async function attachStream(stream) {
         state.stream = stream; cameraVideo.srcObject = stream;
         await cameraVideo.play();
@@ -1349,23 +1804,22 @@
           const devices = await navigator.mediaDevices.enumerateDevices();
           state.cameraCount = devices.filter(device => device.kind === 'videoinput').length;
         } catch { state.cameraCount = 0; }
-        switchCameraButton.disabled = state.cameraCount === 1;
         switchCameraButton.title = state.cameraCount === 1 ? translate('cameraOnlyOne') : '';
         requestScreenWakeLock();
       }
       async function startCamera() {
         if (!state.referenceFile) return;
         clearCameraError();
-        state.phase = 'starting-camera'; $('#startCameraButton').disabled = true; $('#startCameraButton span').textContent = translate('startingCamera');
+        state.phase = 'starting-camera'; $('#startCameraButton').disabled = true; $('#mobileStartCameraButton').disabled = true; $('#startCameraButton span').textContent = translate('startingCamera'); $('#mobileStartCameraButton span').textContent = translate('startingCamera');
         try {
           stopCameraStream();
           const stream = await requestCameraStream();
           await attachStream(stream);
-          showScreen('camera'); setManualAdjust(false); renderOverlayMode();
+          showScreen('camera'); setManualAdjust(false); renderOverlayMode(); syncCaptureControls();
         } catch (error) {
           stopCameraStream(); showScreen('ready'); showCameraError(error?.code === 'INSECURE_CONTEXT' ? 'cameraSecure' : cameraErrorKey(error), error);
         } finally {
-          $('#startCameraButton').disabled = false; $('#startCameraButton span').textContent = translate('startCamera');
+          $('#startCameraButton').disabled = false; $('#mobileStartCameraButton').disabled = false; $('#startCameraButton span').textContent = translate('startCamera'); $('#mobileStartCameraButton span').textContent = translate('startCamera');
         }
       }
       async function switchCamera() {
@@ -1380,8 +1834,7 @@
           try { await attachStream(await requestCameraStream()); renderOverlayMode(); startGuideLoop(); } catch { showCameraError(cameraErrorKey(error), error); showScreen('ready'); }
           AppToast.show({ message: translate('cameraSwitchFailed') });
         } finally {
-          shutterButton.disabled = false;
-          if (state.phase === 'camera') switchCameraButton.disabled = state.cameraCount === 1;
+          if (state.phase === 'camera') syncCaptureControls();
         }
       }
 
@@ -1421,12 +1874,62 @@
           state.alignedBeforeBlob = alignedBeforeBlob; state.alignedBeforeUrl = URL.createObjectURL(alignedBeforeBlob);
           state.captureRatio = outputWidth / outputHeight; state.capturedAt = new Date();
           $('#afterImage').src = state.capturedUrl; $('#beforeImage').src = state.alignedBeforeUrl;
-          compareFrame.style.setProperty('--result-ratio', String(state.captureRatio)); setComparePosition(50);
+          compareFrame.style.setProperty('--result-ratio', String(state.captureRatio)); setComparePosition(50); setResultCompareMode('split');
           cameraStage.classList.remove('is-flashing'); void cameraStage.offsetWidth; cameraStage.classList.add('is-flashing'); captureFeedback();
           stopCameraStream(); showScreen('result');
         } catch (error) {
           console.error(error); state.phase = 'camera'; AppToast.show({ message: translate('captureFailed') });
-          shutterButton.disabled = false; switchCameraButton.disabled = state.cameraCount === 1;
+          syncCaptureControls();
+        }
+      }
+
+      function setSplitFromClientX(clientX) {
+        const rect = cameraStage.getBoundingClientRect();
+        if (!rect.width) return;
+        setSplitPosition(((clientX - rect.left) / rect.width) * 100);
+      }
+      function onSplitPointerDown(event) {
+        if (state.phase !== 'camera' || state.overlayMode !== 'split') return;
+        if (event.button !== undefined && event.button !== 0) return;
+        state.splitPointerId = event.pointerId;
+        splitDivider.setPointerCapture?.(event.pointerId);
+        setSplitFromClientX(event.clientX);
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      function onSplitPointerMove(event) {
+        if (state.splitPointerId !== event.pointerId) return;
+        setSplitFromClientX(event.clientX);
+        event.preventDefault();
+      }
+      function onSplitPointerEnd(event) {
+        if (state.splitPointerId !== event.pointerId) return;
+        if (splitDivider.hasPointerCapture?.(event.pointerId)) splitDivider.releasePointerCapture(event.pointerId);
+        state.splitPointerId = null;
+      }
+      function onSplitKeyDown(event) {
+        if (state.overlayMode !== 'split') return;
+        const step = event.shiftKey ? 10 : 3;
+        if (event.key === 'ArrowLeft') { setSplitPosition(state.splitPosition - step); event.preventDefault(); }
+        else if (event.key === 'ArrowRight') { setSplitPosition(state.splitPosition + step); event.preventDefault(); }
+        else if (event.key === 'Home') { setSplitPosition(0); event.preventDefault(); }
+        else if (event.key === 'End') { setSplitPosition(100); event.preventDefault(); }
+      }
+
+      function clearResultBlinkTimer() {
+        if (state.resultBlinkTimer) clearInterval(state.resultBlinkTimer);
+        state.resultBlinkTimer = 0; state.resultBlinkVisible = true;
+        compareFrame.classList.remove('is-blink-after');
+      }
+      function setResultCompareMode(mode) {
+        if (!['split','ghost','blink'].includes(mode)) mode = 'split';
+        clearResultBlinkTimer(); state.resultCompareMode = mode;
+        compareFrame.classList.toggle('mode-ghost', mode === 'ghost');
+        compareFrame.classList.toggle('mode-blink', mode === 'blink');
+        document.querySelectorAll('[data-result-mode]').forEach(button => button.setAttribute('aria-pressed', button.dataset.resultMode === mode ? 'true' : 'false'));
+        compareFrame.setAttribute('aria-disabled', mode === 'split' ? 'false' : 'true'); $('#compareDragHint').hidden = mode !== 'split';
+        if (mode === 'blink' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          state.resultBlinkTimer = window.setInterval(() => { state.resultBlinkVisible = !state.resultBlinkVisible; compareFrame.classList.toggle('is-blink-after', !state.resultBlinkVisible); }, 720);
         }
       }
 
@@ -1443,6 +1946,7 @@
         setComparePosition(((clientX - rect.left) / rect.width) * 100);
       }
       function onComparePointerDown(event) {
+        if (state.resultCompareMode !== 'split') return;
         if (event.button !== undefined && event.button !== 0) return;
         state.comparePointerId = event.pointerId;
         compareFrame.setPointerCapture?.(event.pointerId);
@@ -1460,6 +1964,7 @@
         state.comparePointerId = null;
       }
       function onCompareKeyDown(event) {
+        if (state.resultCompareMode !== 'split') return;
         const step = event.shiftKey ? 10 : 3;
         if (event.key === 'ArrowLeft') { setComparePosition(state.comparePosition - step); event.preventDefault(); }
         else if (event.key === 'ArrowRight') { setComparePosition(state.comparePosition + step); event.preventDefault(); }
@@ -1506,11 +2011,18 @@
         const comment = escapeHtml($('#comparisonComment').value.trim()); const capturedAt = state.capturedAt || new Date(); const capturedLabel = escapeHtml(capturedAt.toLocaleString(state.language === 'ja' ? 'ja-JP' : 'en-US'));
         const title = state.language === 'ja' ? 'Before / After 比較' : 'Before / After comparison';
         const fullscreen = state.language === 'ja' ? '全画面' : 'Fullscreen'; const half = '50 / 50';
-        const html = `<!doctype html><html lang="${state.language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline';"><title>${escapeHtml(title)}</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f5f2;color:#20211f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.wrap{width:min(1000px,100%);margin:auto;padding:18px}.head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:12px}.head h1{font-size:20px;margin:0}.meta{font-size:12px;color:#666963}.frame{--p:50%;position:relative;aspect-ratio:${state.captureRatio};max-height:78vh;background:#111;overflow:hidden;border-radius:14px;cursor:ew-resize;touch-action:none;user-select:none}.frame:focus-visible{outline:3px solid #4d8bc7;outline-offset:3px}.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#111;pointer-events:none}.before{clip-path:inset(0 calc(100% - var(--p)) 0 0)}.line{position:absolute;top:0;bottom:0;left:var(--p);width:2px;background:#fff;transform:translateX(-1px);pointer-events:none}.handle{position:absolute;z-index:3;top:50%;left:clamp(22px,var(--p),calc(100% - 22px));width:42px;height:42px;transform:translate(-50%,-50%);border-radius:50%;background:#fff;color:#16624F;display:grid;place-items:center;box-shadow:0 2px 10px #0006;pointer-events:none}.handle svg{width:20px;height:20px}.tag{position:absolute;top:10px;padding:5px 8px;border-radius:999px;background:#0009;color:#fff;font-size:11px;font-weight:700}.tag.b{left:10px}.tag.a{right:10px}.controls{display:grid;gap:9px;margin-top:12px}.row{display:flex;flex-wrap:wrap;gap:8px}button{min-height:40px;padding:8px 12px;border:1px solid #dadbd6;border-radius:10px;background:#fff;font-weight:700;cursor:pointer}.comment{margin-top:14px;padding:12px;border-radius:12px;background:#fff;border:1px solid #dadbd6;white-space:pre-wrap}.hint{margin-top:10px;color:#666963;font-size:11px}@media(max-width:600px){.wrap{padding:10px}.head{align-items:start;flex-direction:column}.frame{max-height:72vh}}</style></head><body><main class="wrap"><div class="head"><div><h1>${escapeHtml(title)}</h1><div class="meta">${capturedLabel}</div></div><button id="fs" type="button">${escapeHtml(fullscreen)}</button></div><div class="frame" id="frame" role="slider" tabindex="0" aria-label="Before / After" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><img src="${afterData}" alt="After"><img class="before" src="${beforeData}" alt="Before"><span class="tag b">Before</span><span class="tag a">After</span><span class="line"></span><span class="handle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3m8-6 3 3-3 3"/></svg></span></div><div class="controls"><div class="row"><button data-v="100" type="button">Before</button><button data-v="50" type="button">${half}</button><button data-v="0" type="button">After</button></div></div>${comment ? `<div class="comment">${comment}</div>` : ''}<div class="hint">← / →</div></main><script>(()=>{const f=document.getElementById('frame');let p=50,pid=null;const set=v=>{p=Math.max(0,Math.min(100,Number(v)));f.style.setProperty('--p',p+'%');f.setAttribute('aria-valuenow',String(Math.round(p)))};const fromX=x=>{const b=f.getBoundingClientRect();if(b.width)set((x-b.left)/b.width*100)};f.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;pid=e.pointerId;f.setPointerCapture?.(pid);fromX(e.clientX);e.preventDefault()});f.addEventListener('pointermove',e=>{if(pid!==e.pointerId)return;fromX(e.clientX);e.preventDefault()});const end=e=>{if(pid!==e.pointerId)return;if(f.hasPointerCapture?.(pid))f.releasePointerCapture(pid);pid=null};f.addEventListener('pointerup',end);f.addEventListener('pointercancel',end);document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>set(b.dataset.v)));f.addEventListener('keydown',e=>{const d=e.shiftKey?10:3;if(e.key==='ArrowLeft'){set(p-d);e.preventDefault()}else if(e.key==='ArrowRight'){set(p+d);e.preventDefault()}else if(e.key==='Home'){set(0);e.preventDefault()}else if(e.key==='End'){set(100);e.preventDefault()}});document.getElementById('fs').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()})})();<${'/' + 'script'}></body></html>`;
-        outputFilename.value = normalizeFilenameBase(); downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), `${outputFilename.value}-compare.html`); AppToast.show({ message: translate('htmlSaved') });
+        const downloadBefore = escapeHtml(translate('downloadBefore')); const downloadAfter = escapeHtml(translate('downloadAfter'));
+        const base = normalizeFilenameBase();
+        const commentTitle = state.language === 'ja' ? 'コメント' : 'Comment';
+        const comparisonViewLabel = state.language === 'ja' ? '比較表示' : 'Comparison view';
+        const viewerMaxWidthVh = Math.round(state.captureRatio * 78 * 1000) / 1000;
+        const faviconHref = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2216%22%20fill%3D%22%2316624F%22%2F%3E%3Crect%20x%3D%2214%22%20y%3D%2218%22%20width%3D%2229%22%20height%3D%2225%22%20rx%3D%224%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.5%22%2F%3E%3Crect%20x%3D%2221%22%20y%3D%2213%22%20width%3D%2229%22%20height%3D%2225%22%20rx%3D%224%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.5%22%20opacity%3D%22.8%22%2F%3E%3Cpath%20d%3D%22M46%2039v12M40%2045h12%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.5%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2246%22%20cy%3D%2245%22%20r%3D%228%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.5%22%20opacity%3D%22.9%22%2F%3E%3C%2Fsvg%3E';
+        const html = `<!doctype html><html lang="${state.language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; script-src 'unsafe-inline';"><title>${escapeHtml(title)}</title><link rel="icon" href="${faviconHref}"><style>*{box-sizing:border-box}body{margin:0;background:#f5f5f2;color:#20211f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.wrap{width:min(1000px,100%);margin:auto;padding:18px}.head{display:flex;justify-content:space-between;gap:12px;align-items:end;margin-bottom:12px}.head h1{font-size:20px;margin:0}.meta{font-size:12px;color:#666963}.viewer{display:grid;justify-items:center}.modes{width:min(460px,100%);display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0 auto 10px}.modes button[aria-pressed=true]{border-color:#16624f;background:#e1f0ea;color:#16624f}.frame{--p:50%;position:relative;width:min(860px,100%,${viewerMaxWidthVh}vh);aspect-ratio:${state.captureRatio};margin:0 auto;background:#111;overflow:hidden;border-radius:14px;cursor:ew-resize;touch-action:none;user-select:none}.frame:focus-visible{outline:3px solid #4d8bc7;outline-offset:3px}.frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;background:#111;pointer-events:none}.before{clip-path:inset(0 calc(100% - var(--p)) 0 0)}.frame.ghost .before{clip-path:none;opacity:.5}.frame.blink .before{clip-path:none;opacity:1}.frame.ghost .line,.frame.ghost .handle,.frame.blink .line,.frame.blink .handle{display:none}.frame.ghost .tag{display:none}.frame.blink .tag{display:none}.frame.blink:not(.after) .tag.b{display:block}.frame.blink.after .tag.a{display:block}.frame.blink.after .before{visibility:hidden}.line{position:absolute;top:0;bottom:0;left:var(--p);width:2px;background:#fff;transform:translateX(-1px);pointer-events:none}.handle{position:absolute;z-index:3;top:50%;left:clamp(22px,var(--p),calc(100% - 22px));width:42px;height:42px;transform:translate(-50%,-50%);border-radius:50%;background:#fff;color:#16624F;display:grid;place-items:center;box-shadow:0 2px 10px #0006;pointer-events:none}.handle svg{width:20px;height:20px}.tag{position:absolute;top:10px;padding:5px 8px;border-radius:999px;background:#0009;color:#fff;font-size:11px;font-weight:700}.tag.b{left:10px}.tag.a{right:10px}.controls{width:min(620px,100%);display:grid;gap:9px;margin:12px auto 0}.row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.row button{min-width:92px}button,a.dl{min-height:40px;padding:8px 12px;border:1px solid #dadbd6;border-radius:10px;background:#fff;color:#20211f;font:inherit;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.downloads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.comment{width:min(860px,100%);margin:16px auto 0;padding:13px 14px;border-radius:12px;background:#fff;border:1px solid #dadbd6}.comment-label{display:flex;align-items:center;gap:7px;margin-bottom:7px;color:#16624f;font-size:11px;font-weight:800}.comment-label svg{width:16px;height:16px;flex:0 0 auto}.comment-body{white-space:pre-wrap;font-size:13px;line-height:1.65}@media(max-width:600px){.wrap{padding:10px}.head{align-items:start;flex-direction:column}.frame{width:100%;max-height:72vh}.controls{width:100%}.downloads{grid-template-columns:1fr}.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.row button{min-width:0;padding-inline:7px}}</style></head><body><main class="wrap"><div class="head"><div><h1>${escapeHtml(title)}</h1><div class="meta">${capturedLabel}</div></div><button id="fs" type="button">${escapeHtml(fullscreen)}</button></div><div class="viewer"><div class="modes" role="group" aria-label="${escapeHtml(comparisonViewLabel)}"><button data-mode="split" aria-pressed="true" type="button">Split</button><button data-mode="ghost" aria-pressed="false" type="button">Ghost</button><button data-mode="blink" aria-pressed="false" type="button">Blink</button></div><div class="frame" id="frame" role="slider" tabindex="0" aria-label="Before / After" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><img src="${afterData}" alt="After"><img class="before" src="${beforeData}" alt="Before"><span class="tag b">Before</span><span class="tag a">After</span><span class="line"></span><span class="handle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3m8-6 3 3-3 3"/></svg></span></div></div><div class="controls"><div class="row"><button data-v="100" type="button">Before</button><button data-v="50" type="button">${half}</button><button data-v="0" type="button">After</button></div><div class="downloads"><a class="dl" href="${beforeData}" download="${escapeHtml(base)}-before.jpg">${downloadBefore}</a><a class="dl" href="${afterData}" download="${escapeHtml(base)}.jpg">${downloadAfter}</a></div></div>${comment ? `<div class="comment"><div class="comment-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14v10H9l-4 4z"/><path d="M8 9h8M8 12h5"/></svg>${escapeHtml(commentTitle)}</div><div class="comment-body">${comment}</div></div>` : ''}</main><script>(()=>{const f=document.getElementById('frame');let p=50,pid=null,mode='split',blink=0,vis=true;const stop=()=>{if(blink)clearInterval(blink);blink=0;vis=true;f.classList.remove('after')};const setMode=m=>{if(!['split','ghost','blink'].includes(m))m='split';stop();mode=m;f.classList.toggle('ghost',m==='ghost');f.classList.toggle('blink',m==='blink');document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m?'true':'false'));if(m==='blink'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)blink=setInterval(()=>{vis=!vis;f.classList.toggle('after',!vis)},720)};const set=v=>{p=Math.max(0,Math.min(100,Number(v)));f.style.setProperty('--p',p+'%');f.setAttribute('aria-valuenow',String(Math.round(p)))};const fromX=x=>{if(mode!=='split')return;const b=f.getBoundingClientRect();if(b.width)set((x-b.left)/b.width*100)};f.addEventListener('pointerdown',e=>{if(mode!=='split'||(e.button!==undefined&&e.button!==0))return;pid=e.pointerId;f.setPointerCapture?.(pid);fromX(e.clientX);e.preventDefault()});f.addEventListener('pointermove',e=>{if(pid!==e.pointerId)return;fromX(e.clientX);e.preventDefault()});const end=e=>{if(pid!==e.pointerId)return;if(f.hasPointerCapture?.(pid))f.releasePointerCapture(pid);pid=null};f.addEventListener('pointerup',end);f.addEventListener('pointercancel',end);document.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{setMode('split');set(b.dataset.v)}));document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));f.addEventListener('keydown',e=>{if(mode!=='split')return;const d=e.shiftKey?10:3;if(e.key==='ArrowLeft'){set(p-d);e.preventDefault()}else if(e.key==='ArrowRight'){set(p+d);e.preventDefault()}else if(e.key==='Home'){set(0);e.preventDefault()}else if(e.key==='End'){set(100);e.preventDefault()}});document.getElementById('fs').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()})})();<${'/' + 'script'}></body></html>`;
+        outputFilename.value = base; downloadBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), `${base}-compare.html`); AppToast.show({ message: translate('htmlSaved') });
       }
       function openHtmlExportDialog() { if (state.capturedBlob && state.alignedBeforeBlob) exportHtmlDialog.showModal(); }
-      async function retake() { showScreen('ready'); await startCamera(); }
+      function openRetakeDialog() { if (state.capturedBlob) $('#retakeDialog').showModal(); }
+      async function retake() { $('#retakeDialog').close(); shutterButton.disabled = false; $('#timerButton').disabled = false; showScreen('ready'); await startCamera(); }
       function chooseNewReference() { fileInput.value = ''; fileInput.click(); }
 
       // Pointer gestures use percentage translation so the alignment survives moderate stage resizing.
@@ -1521,7 +2033,7 @@
         return { distance: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI, midX: (a.x + b.x) / 2, midY: (a.y + b.y) / 2, scale: state.transform.scale, rotation: state.transform.rotation, tx: state.transform.tx, ty: state.transform.ty };
       }
       function onPointerDown(event) {
-        if (state.phase !== 'camera' || !state.manualAdjust || state.countdownActive || event.target.closest('button, input, summary, a')) return; event.preventDefault(); cameraStage.setPointerCapture?.(event.pointerId); state.pointers.set(event.pointerId, pointFromEvent(event));
+        if (state.phase !== 'camera' || !state.manualAdjust || state.countdownActive || event.target.closest('button, input, summary, a, .camera-ui-control')) return; event.preventDefault(); cameraStage.setPointerCapture?.(event.pointerId); state.pointers.set(event.pointerId, pointFromEvent(event));
         if (state.pointers.size === 1) { state.onePointerLast = pointFromEvent(event); state.twoPointerGesture = null; }
         if (state.pointers.size === 2) { state.twoPointerGesture = twoGestureSnapshot(); state.onePointerLast = null; }
       }
@@ -1554,6 +2066,11 @@
       }
 
       $('#chooseButton').addEventListener('click', event => { event.stopPropagation(); fileInput.click(); });
+      $('#mobileChooseButton').addEventListener('click', () => fileInput.click());
+      $('#mobileChangeReferenceButton').addEventListener('click', chooseNewReference);
+      $('#mobileStartCameraButton').addEventListener('click', startCamera);
+      $('#mobileRetakeButton').addEventListener('click', openRetakeDialog);
+      $('#mobileSavePhotoButton').addEventListener('click', savePhoto);
       dropZone.addEventListener('click', event => { if (event.target.closest('button')) return; fileInput.click(); });
       dropZone.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fileInput.click(); } });
       ['dragenter', 'dragover'].forEach(type => dropZone.addEventListener(type, event => { event.preventDefault(); dropZone.classList.add('is-dragging'); }));
@@ -1563,28 +2080,40 @@
       $('#changeReferenceButton').addEventListener('click', chooseNewReference);
       $('#newReferenceFromResultButton').addEventListener('click', chooseNewReference);
       $('#startCameraButton').addEventListener('click', startCamera);
-      $('#backFromCameraButton').addEventListener('click', () => { stopCameraStream(); showScreen(state.capturedBlob ? 'result' : 'ready'); });
+      const leaveCamera = () => { stopCameraStream(); showScreen(state.capturedBlob ? 'result' : 'ready'); };
+      $('#backFromCameraButton').addEventListener('click', leaveCamera);
+      $('#mobileBackButton').addEventListener('click', leaveCamera);
       switchCameraButton.addEventListener('click', switchCamera);
       shutterButton.addEventListener('click', requestCapture);
       $('#resetOverlayButton').addEventListener('click', () => resetOverlay());
-      $('#timerButton').addEventListener('click', event => { event.stopPropagation(); timerPopover.hidden = !timerPopover.hidden; $('#timerButton').setAttribute('aria-expanded', timerPopover.hidden ? 'false' : 'true'); });
+      $('#timerButton').addEventListener('click', event => { event.stopPropagation(); overlaySettings.open = false; timerPopover.hidden = !timerPopover.hidden; $('#timerButton').setAttribute('aria-expanded', timerPopover.hidden ? 'false' : 'true'); });
+      overlaySettings.addEventListener('toggle', () => {
+        cameraStage.classList.toggle('settings-open', overlaySettings.open);
+        if (overlaySettings.open) { timerPopover.hidden = true; $('#timerButton').setAttribute('aria-expanded', 'false'); }
+      });
       document.querySelectorAll('.timer-option').forEach(button => button.addEventListener('click', () => setTimerSeconds(Number(button.dataset.timer || 0))));
-      document.addEventListener('click', event => { if (!event.target.closest('.timer-control')) { timerPopover.hidden = true; $('#timerButton').setAttribute('aria-expanded', 'false'); } });
+      document.addEventListener('click', event => { if (!event.target.closest('.timer-control')) { timerPopover.hidden = true; $('#timerButton').setAttribute('aria-expanded', 'false'); } if (overlaySettings.open && !event.target.closest('#overlaySettings')) overlaySettings.open = false; });
       $('#countdownCancelButton').addEventListener('click', () => cancelCountdown(false));
       guideToggle.addEventListener('change', () => { state.guideEnabled = guideToggle.checked; if (state.guideEnabled && !state.manualAdjust && state.phase === 'camera' && state.stream) startGuideLoop(); else stopGuideLoop(true); renderGuideState(); });
       manualAdjustToggle.addEventListener('change', () => setManualAdjust(manualAdjustToggle.checked));
       document.querySelectorAll('[data-overlay-mode]').forEach(button => button.addEventListener('click', () => setOverlayMode(button.dataset.overlayMode)));
-      splitRange.addEventListener('input', event => { state.splitPosition = clamp(Number(event.target.value), 15, 85); renderOverlayMode(); });
+      splitRange.addEventListener('input', event => { setSplitPosition(event.target.value); });
       $('#opacityRange').addEventListener('input', event => { state.transform.opacity = Number(event.target.value) / 100; renderOverlayTransform(); });
       $('#scaleRange').addEventListener('input', event => { state.transform.scale = Number(event.target.value) / 100; renderOverlayTransform(); });
       $('#rotationRange').addEventListener('input', event => { state.transform.rotation = Number(event.target.value); renderOverlayTransform(); });
       cameraStage.addEventListener('pointerdown', onPointerDown); cameraStage.addEventListener('pointermove', onPointerMove); cameraStage.addEventListener('pointerup', onPointerEnd); cameraStage.addEventListener('pointercancel', onPointerEnd);
       cameraStage.addEventListener('wheel', onWheel, { passive: false });
+      splitDivider.addEventListener('pointerdown', onSplitPointerDown);
+      splitDivider.addEventListener('pointermove', onSplitPointerMove);
+      splitDivider.addEventListener('pointerup', onSplitPointerEnd);
+      splitDivider.addEventListener('pointercancel', onSplitPointerEnd);
+      splitDivider.addEventListener('keydown', onSplitKeyDown);
       compareFrame.addEventListener('pointerdown', onComparePointerDown);
       compareFrame.addEventListener('pointermove', onComparePointerMove);
       compareFrame.addEventListener('pointerup', onComparePointerEnd);
       compareFrame.addEventListener('pointercancel', onComparePointerEnd);
       compareFrame.addEventListener('keydown', onCompareKeyDown);
+      document.querySelectorAll('[data-result-mode]').forEach(button => button.addEventListener('click', () => setResultCompareMode(button.dataset.resultMode)));
       outputFilename.addEventListener('blur', () => { outputFilename.value = normalizeFilenameBase(); });
       $('#savePhotoButton').addEventListener('click', savePhoto);
       $('#saveCompareImageButton').addEventListener('click', () => saveComparisonImage().catch(error => { console.error(error); AppToast.show({ message: translate('captureFailed') }); }));
@@ -1592,14 +2121,20 @@
       $('#closeExportHtmlButton').addEventListener('click', () => exportHtmlDialog.close());
       $('#cancelExportHtmlButton').addEventListener('click', () => exportHtmlDialog.close());
       $('#confirmExportHtmlButton').addEventListener('click', () => { exportHtmlDialog.close(); saveComparisonHtml().catch(error => { console.error(error); AppToast.show({ message: translate('captureFailed') }); }); });
-      $('#retakeButton').addEventListener('click', retake);
-      $('#languageButton').addEventListener('click', () => { state.language = state.language === 'ja' ? 'en' : 'ja'; try { localStorage.setItem(storageKey, state.language); } catch {} applyLanguage(); });
+      $('#retakeButton').addEventListener('click', openRetakeDialog);
+      $('#closeRetakeDialogButton').addEventListener('click', () => $('#retakeDialog').close());
+      $('#cancelRetakeButton').addEventListener('click', () => $('#retakeDialog').close());
+      $('#confirmRetakeButton').addEventListener('click', () => retake().catch(error => { console.error(error); AppToast.show({ message: translate('cameraGeneric') }); }));
+      $('#retakeDialog').addEventListener('click', event => { const rect = $('#retakeDialog').getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) $('#retakeDialog').close(); });
+      $('#languageButton').addEventListener('click', toggleLanguage);
+      $('#mobileLanguageButton').addEventListener('click', toggleLanguage);
       $('#helpButton').addEventListener('click', () => helpDialog.showModal());
+      $('#mobileHelpButton').addEventListener('click', () => helpDialog.showModal());
       $('#closeHelpButton').addEventListener('click', () => helpDialog.close());
       helpDialog.addEventListener('click', event => { const rect = helpDialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) helpDialog.close(); });
       document.addEventListener('visibilitychange', () => {
         if (document.hidden) { stopGuideLoop(false); releaseScreenWakeLock(); }
-        else if (state.phase === 'camera' && state.stream) { if (state.guideEnabled && !state.manualAdjust) startGuideLoop(); requestScreenWakeLock(); }
+        else if (state.phase === 'camera' && state.stream) { if (state.guideEnabled && !state.manualAdjust) startGuideLoop(); requestScreenWakeLock(); syncCaptureControls(); }
       });
       window.addEventListener('pagehide', stopCameraStream);
       window.addEventListener('beforeunload', () => { stopCameraStream(); safeRevoke(state.referenceUrl); clearOutline(); clearCapture(); state.guideWorker?.terminate(); if (state.guideWorkerUrl) URL.revokeObjectURL(state.guideWorkerUrl); blobUrls.forEach(url => URL.revokeObjectURL(url)); });

@@ -1,9 +1,9 @@
-# APP_SPEC.md — Photo Re-Enactor v1.0.0
+# APP_SPEC.md — Photo Re-Enactor v1.1.0
 
 ## 1. Product identity
 
 - **Name:** Photo Re-Enactor / 同じ構図で撮る
-- **Version:** v1.0.0
+- **Version:** v1.1.0
 - **Purpose:** Use a previous or Before photo as a ghost overlay while photographing the same scene again.
 - **Primary environment:** Smartphone camera, with desktop support.
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
@@ -18,8 +18,8 @@ v1.0.0 completes the first release scope: reference-photo overlay shooting, manu
 4. Choose Ghost / Outline / Blink / Split to view the reference over the live camera.
 5. Use the composition guide when available. If the reference itself needs adjustment, explicitly enable manual reference adjustment before dragging, pinching, wheel-zooming, or rotating it.
 6. Optionally use the OFF / 3 / 5 / 10 second timer and capture at any time.
-7. Compare the aligned Before image and the new photo by dragging the divider handle directly on the image.
-8. Save the new JPEG, side-by-side comparison JPEG, or standalone comparison HTML.
+7. Compare the aligned Before image and the captured photo by dragging the divider handle directly on the image.
+8. Save the captured JPEG, side-by-side comparison JPEG, or standalone comparison HTML.
 9. Retake or choose another reference image.
 
 ## 3. Functional requirements
@@ -27,7 +27,7 @@ v1.0.0 completes the first release scope: reference-photo overlay shooting, manu
 - Accept JPEG, PNG, and WebP images up to 50 MB.
 - Support drag-and-drop on desktop and normal file selection on smartphones.
 - Do not request camera access on initial page load or when only choosing a reference image.
-- Use `navigator.mediaDevices.getUserMedia` only after the user chooses **Start camera**.
+- Use `navigator.mediaDevices.getUserMedia` only after the user chooses **Start shooting**.
 - Default to the rear/environment camera; provide front/rear switching after camera permission is granted.
 - Provide Ghost / Outline / Blink / Split overlay modes. Blink must respect `prefers-reduced-motion`; Split provides a movable boundary.
 - Keep opacity control from 20% to 80% for image overlays.
@@ -41,7 +41,7 @@ v1.0.0 completes the first release scope: reference-photo overlay shooting, manu
 - Estimate horizontal, vertical, scale, and rotation offsets locally in a Worker; hide the score when comparison is unreliable.
 - Automatic guidance must never block capture.
 - Provide OFF / 3 / 5 / 10 second timer with cancellation.
-- Save results only after explicit user action, including new JPEG, comparison JPEG, and standalone comparison HTML.
+- Save results only after explicit user action, including captured JPEG, comparison JPEG, and standalone comparison HTML.
 - Output JPEG filenames are editable before saving; invalid filename characters are sanitized and `.jpg` is added automatically.
 - UI is Japanese / English without reloading.
 - No image persistence in LocalStorage / IndexedDB. Only the language preference may be stored.
@@ -87,7 +87,7 @@ The application HTML itself can open through `file://`, but camera APIs may be u
 - Visible keyboard focus, ARIA labels/status, Escape-close dialogs, and reduced-motion support are required.
 - The on-image comparison divider works with pointer/touch drag, keyboard arrows, Home, and End.
 
-## 9. Explicit v1.0.0 non-goals
+## 9. Current non-goals
 
 - Person identification or pose matching.
 - Match-triggered automatic capture.
@@ -109,10 +109,30 @@ The application HTML itself can open through `file://`, but camera APIs may be u
 
 ## 11. Release status
 
-v1.0.0 is the first stable release. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
+v1.1.0 is the current stable line. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
+
+
+## v1.1.0 camera UI refresh
+
+- Smartphone capture uses a full-screen live camera surface patterned after the QR Reader camera UI.
+- The normal Browser Kitty header and page introduction are hidden only while capturing on smartphone-sized viewports.
+- Back, language, and Help remain reachable from a lightweight top overlay.
+- Camera switch, shutter, and timer are grouped in a dark translucent in-camera dock.
+- Overlay settings remain available without leaving the camera and expand as a floating control panel.
+- On smartphones, the compact overlay-settings bar stays visually separated from the camera dock and closes when the user taps elsewhere.
+- Split mode supports direct divider dragging on the camera image.
+- Result comparison and exported comparison HTML support Split, Ghost, and Blink; exported HTML can also save Before / After images individually.
+- Returning to the camera re-synchronizes shutter availability, and Retake requires confirmation.
+- Desktop and result/reference screens keep the established Browser Kitty layout.
 
 ## v1.0.0 UX notes
 
 - Normal camera interaction no longer moves the reference image. Manual drag / pinch / wheel adjustment requires the explicit **Adjust reference manually / 元写真を手動調整** switch.
 - Automatic composition guidance pauses during manual reference adjustment and resumes after the mode is turned off.
 - Direction guidance uses consecutive-result hysteresis, and transient analysis failures are tolerated before showing the manual fallback state.
+
+
+## v1.1.0 UX notes
+- The opening screen summarizes the three-step flow: choose a reference, line up and capture, then compare/save.
+- Capture-time Split can move from 0% through 100%.
+- Comparison HTML centers its viewer, labels comments, includes a favicon, and allows Before/After image downloads.
