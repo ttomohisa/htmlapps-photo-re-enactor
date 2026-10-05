@@ -2,6 +2,11 @@
 
 All notable changes to Photo Re-Enactor are documented here.
 
+## Unreleased
+
+- Fix dependency maintenance reports for empty or null dependency lists under PowerShell strict mode.
+- Run offline report regressions (empty, disabled, current, and update-policy cases) from the normal repository check.
+
 ## 1.1.0 - 2026-09-02
 - Allow the capture-time Split divider to move fully from 0% to 100%.
 - Center the comparison HTML viewer and comparison preset controls.

@@ -32,6 +32,7 @@ $required = @(
   "scripts\build-self-extract.ps1",
   "scripts\dependency-tools.ps1",
   "scripts\check-dependency-updates.ps1",
+  "scripts\test-dependency-updates.ps1",
   "scripts\sync-dependency-lock.ps1",
   "scripts\update-dependency.ps1",
   "scripts\verify-standalone.ps1",
@@ -146,6 +147,7 @@ $buildCompatibilityFiles = @(
   "scripts\verify-self-extract.ps1",
   "scripts\dependency-tools.ps1",
   "scripts\check-dependency-updates.ps1",
+  "scripts\test-dependency-updates.ps1",
   "scripts\sync-dependency-lock.ps1",
   "scripts\update-dependency.ps1"
 )
@@ -159,6 +161,9 @@ foreach ($relative in $buildCompatibilityFiles) {
     throw "$relative must not use ::new(); use New-Object or older-compatible .NET construction syntax."
   }
 }
+
+# Keep dependency-report edge cases in ordinary PR validation, without registry access.
+& (Join-Path $Root "scripts\test-dependency-updates.ps1")
 
 # Regression check: runtime identifiers like __APP_INTERNAL_STATE__ are not build placeholders.
 $verifyPath = Join-Path $Root "scripts\verify-standalone.ps1"
