@@ -24,7 +24,7 @@ GitHub Pages delivers the initial HTML. After it loads, reference-photo decoding
 - **A complete manual fallback** — If automatic guidance is unsuitable, explicitly enable **Adjust reference manually** and move, zoom, or rotate the reference yourself.
 - **Shooting timer** — OFF / 3 / 5 / 10 seconds with cancellation.
 - **Flexible Before / After comparison** — Switch among Split, Ghost, and Blink; in Split mode, drag the divider directly on the result image.
-- **Three export options** — Save the captured JPEG, a side-by-side comparison JPEG, or a standalone comparison HTML with both photos embedded. The comparison HTML also supports Split / Ghost / Blink and individual Before / After downloads.
+- **Three export options** — Save the captured JPEG, a side-by-side or stacked comparison JPEG, or a standalone comparison HTML with both photos embedded. The comparison HTML also supports Split / Ghost / Blink and individual Before / After downloads.
 - **QR Reader-style camera UI** — On smartphones, the live view fills the screen and translucent camera controls stay over the image in both portrait and landscape.
 - **Fully local processing** — No runtime external connections, analytics, telemetry, login, or automatic upload.
 
@@ -50,7 +50,9 @@ Some browsers do not allow camera access from an HTML file opened through `file:
 4. If the reference itself needs adjustment, enable **Adjust reference manually**, then drag, pinch/zoom, or rotate it. Turning the mode off resumes composition guidance.
 5. Optionally choose a 3 / 5 / 10 second timer and press the shutter. A low match score never blocks capture.
 6. After capture, switch among Split, Ghost, and Blink to compare Before and After. In Split mode, drag the divider directly on the image.
-7. Save the captured photo, comparison image, and/or standalone comparison HTML. The HTML can also download Before and After individually. **Retake** asks for confirmation before returning to the camera while keeping the same reference and alignment.
+7. Choose **Side by side** (default) or **Stacked (Before above After)** in **Comparison JPEG layout**, then save the captured photo, comparison image, and/or standalone comparison HTML. The HTML can also download Before and After individually. **Retake** asks for confirmation before returning to the camera while keeping the same reference and alignment.
+
+Comparison exports use the photos, filename, layout, and HTML details from when saving starts. Changes to these fields apply to the next export. Replacing the reference or completing another capture cancels an unfinished export. Stacked JPEGs use `-compare-stacked.jpg`; horizontal JPEGs keep `-compare.jpg`. The layout is session-only and resets on reload; it does not change the photos’ aspect ratio or the interactive comparison viewer.
 
 ## Composition guide
 
@@ -74,6 +76,8 @@ The repository includes a workflow that runs the template's standard Repository 
 Every push to `main` runs `scripts/check-repository.ps1` on Windows, rebuilds and verifies the readable and self-extracting single HTML files, and then publishes `dist`.
 
 ## Development and build
+
+Node.js 20 or newer is required for the offline export regression tests in the full repository check. No npm dependencies are needed.
 
 Use the template-standard Windows build:
 

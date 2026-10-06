@@ -37,6 +37,7 @@ $required = @(
   "scripts\update-dependency.ps1",
   "scripts\verify-standalone.ps1",
   "scripts\verify-self-extract.ps1",
+  "tests\comparison-export.test.cjs",
   "README.md",
   "README.ja.md",
   "LICENSE",
@@ -190,5 +191,21 @@ if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json
 $buildArguments = @{}
 if ($ForceDownload) { $buildArguments.ForceDownload = $true }
 & (Join-Path $Root "build-standalone.ps1") @buildArguments
+
+# Exercise the actual comparison exports in source and every distributed form.
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw "Node.js 20 or newer is required for offline comparison export tests." }
+$nodeMajor = [int](& node -p "process.versions.node.split('.')[0]")
+if ($nodeMajor -lt 20) { throw "Node.js 20 or newer is required for offline comparison export tests." }
+$previousExportHtml = $env:PHOTO_EXPORT_HTML
+try {
+  foreach ($relative in @("src\index.template.html", "photo-re-enactor.html", "dist\index.html", "dist\index.self-extract.html")) {
+    $env:PHOTO_EXPORT_HTML = Join-Path $Root $relative
+    & node --test (Join-Path $Root "tests\comparison-export.test.cjs")
+    if ($LASTEXITCODE -ne 0) { throw "Comparison export tests failed: $relative" }
+  }
+} finally {
+  if ($null -eq $previousExportHtml) { Remove-Item Env:PHOTO_EXPORT_HTML -ErrorAction SilentlyContinue }
+  else { $env:PHOTO_EXPORT_HTML = $previousExportHtml }
+}
 
 Write-Host "[OK] Repository check passed." -ForegroundColor Green
