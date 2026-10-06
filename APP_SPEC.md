@@ -19,7 +19,7 @@ v1.0.0 completes the first release scope: reference-photo overlay shooting, manu
 5. Use the composition guide when available. If the reference itself needs adjustment, explicitly enable manual reference adjustment before dragging, pinching, wheel-zooming, or rotating it.
 6. Optionally use the OFF / 3 / 5 / 10 second timer and capture at any time.
 7. Compare the aligned Before image and the captured photo by dragging the divider handle directly on the image.
-8. Save the captured JPEG, side-by-side comparison JPEG, or standalone comparison HTML.
+8. Save the captured JPEG, side-by-side or stacked comparison JPEG, or standalone comparison HTML.
 9. Retake or choose another reference image.
 
 ## 3. Functional requirements
@@ -136,3 +136,13 @@ v1.1.0 is the current stable line. It keeps the v1.0.0 capture and export flow w
 - The opening screen summarizes the three-step flow: choose a reference, line up and capture, then compare/save.
 - Capture-time Split can move from 0% through 100%.
 - Comparison HTML centers its viewer, labels comments, includes a favicon, and allows Before/After image downloads.
+
+## Comparison export layouts and result ownership
+
+- The labeled **Comparison JPEG layout** native select offers **Side by side** (default) and **Stacked (Before above After)** in English and Japanese. It is session-only, resets on reload, and does not change capture geometry, reference transforms, or the interactive comparison viewer/HTML modes.
+- Both layouts retain the current per-photo dimensions: scale the captured photo down only when its longer side exceeds 1400 px, round each dimension, and keep a minimum of 1 px. Use those same `w × h` dimensions for both aligned images without new cropping.
+- Side by side remains `2w × (h + 44)` with the existing `-compare.jpg` filename. Stacked is `w × (2h + 88)`, Before on top and After below, each with a 44 px label band, and uses `-compare-stacked.jpg`. Both are JPEG at quality 0.9.
+- Before the first asynchronous operation, comparison JPEG and HTML exports snapshot both immutable Blobs, source generation, sanitized filename, layout, aspect ratio, date label, comment, language, and localized labels. HTML snapshots begin after the existing privacy confirmation.
+- Recheck source generation and both Blob identities after asynchronous reads and before download. A replaced/cleared reference, recapture (even within the same generation), or otherwise obsolete pair must not produce a stale download, success message, or late failure message. Current failures still use the existing error feedback.
+- Editing fields or changing language for the same result does not alter an already started export; those edits remain available for the next export and must not be overwritten by completion.
+- Offline Node.js tests exercise actual source functions with synthetic FileReader, image decode, and canvas boundaries. The repository check runs them against source, root release, generated readable HTML, and the restored self-extract payload.

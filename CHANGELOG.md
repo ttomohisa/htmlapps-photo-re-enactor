@@ -4,6 +4,10 @@ All notable changes to Photo Re-Enactor are documented here.
 
 ## Unreleased
 
+- Add a session-only stacked comparison JPEG option with Before above After, alongside the unchanged side-by-side default.
+- Keep comparison JPEG and HTML exports tied to their click-time photo pair, filename, and metadata; discard stale completions after a reference or capture changes.
+- Add offline export regressions across source and generated release variants.
+
 - Fix dependency maintenance reports for empty or null dependency lists under PowerShell strict mode.
 - Run offline report regressions (empty, disabled, current, and update-policy cases) from the normal repository check.
 
