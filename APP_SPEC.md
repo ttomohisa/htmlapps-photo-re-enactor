@@ -1,9 +1,9 @@
-# APP_SPEC.md — Photo Re-Enactor v1.1.0
+# APP_SPEC.md — Photo Re-Enactor v1.1.1
 
 ## 1. Product identity
 
 - **Name:** Photo Re-Enactor / 同じ構図で撮る
-- **Version:** v1.1.0
+- **Version:** v1.1.1
 - **Purpose:** Use a previous or Before photo as a ghost overlay while photographing the same scene again.
 - **Primary environment:** Smartphone camera, with desktop support.
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
@@ -109,7 +109,7 @@ The application HTML itself can open through `file://`, but camera APIs may be u
 
 ## 11. Release status
 
-v1.1.0 is the current stable line. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
+v1.1.1 is the current stable release. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
 
 
 ## v1.1.0 camera UI refresh
@@ -146,3 +146,8 @@ v1.1.0 is the current stable line. It keeps the v1.0.0 capture and export flow w
 - Recheck source generation and both Blob identities after asynchronous reads and before download. A replaced/cleared reference, recapture (even within the same generation), or otherwise obsolete pair must not produce a stale download, success message, or late failure message. Current failures still use the existing error feedback.
 - Editing fields or changing language for the same result does not alter an already started export; those edits remain available for the next export and must not be overwritten by completion.
 - Offline Node.js tests exercise actual source functions with synthetic FileReader, image decode, and canvas boundaries. The repository check runs them against source, root release, generated readable HTML, and the restored self-extract payload.
+
+## Header normalization (1.1.1)
+
+- The language control shows EN in Japanese and JA in English, with a destination title and accessible name localized to the current UI language. Existing header Help attributes are localized.
+- Existing Japanese local-processing badges use 完全ローカル処理, with accurate English wording retained. Layout, processing boundaries, persistence, model/camera behavior, and their existing limitations are unchanged.
