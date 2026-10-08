@@ -208,4 +208,6 @@ try {
   else { $env:PHOTO_EXPORT_HTML = $previousExportHtml }
 }
 
+& node (Join-Path $Root "tests\header-normalization.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
 Write-Host "[OK] Repository check passed." -ForegroundColor Green

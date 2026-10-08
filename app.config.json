@@ -3,7 +3,7 @@
   "name": "Photo Re-Enactor",
   "nameJa": "同じ構図で撮る",
   "slug": "photo-re-enactor",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Use a reference photo as a ghost overlay to retake a scene from nearly the same composition, entirely in the browser.",
   "descriptionJa": "元写真をカメラ映像へ重ね、できるだけ同じ構図で撮り直すためのブラウザツールです。",
   "defaultLanguage": "auto",

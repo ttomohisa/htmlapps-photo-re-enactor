@@ -2,6 +2,11 @@
 
 All notable changes to Photo Re-Enactor are documented here.
 
+## 1.1.1 - 2026-10-08
+
+- Normalize header EN / JA labels and localized language/Help tooltips and accessible names.
+- Keep the visible app version and release metadata synchronized; normalize existing Japanese local-processing badges without changing processing behavior.
+
 ## Unreleased
 
 - Add a session-only stacked comparison JPEG option with Before above After, alongside the unchanged side-by-side default.

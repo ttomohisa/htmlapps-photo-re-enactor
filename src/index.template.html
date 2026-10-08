@@ -792,12 +792,12 @@
           </svg>
         </div>
         <div class="brand-copy">
-          <h1 class="brand-name"><span id="headerAppName">同じ構図で撮る</span><span class="version-badge" id="versionBadge">v1.1.0</span></h1>
+          <h1 class="brand-name"><span id="headerAppName">同じ構図で撮る</span><span class="version-badge" id="versionBadge">v1.1.1</span></h1>
           <p class="brand-meta" data-i18n="brandMeta">写真を重ねて構図を合わせる · 完全ローカル処理</p>
         </div>
       </div>
       <div class="header-actions">
-        <button class="language-button" id="languageButton" type="button" aria-label="英語に切り替え">EN</button>
+        <button class="language-button" id="languageButton" type="button" title="英語に切り替え" aria-label="英語に切り替え">EN</button>
         <button class="header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9a2.4 2.4 0 1 1 3.8 1.95c-.9.62-1.5 1.08-1.5 2.05"/><path d="M12 17h.01"/></svg>
         </button>
@@ -904,7 +904,7 @@
             <div class="mobile-camera-title" id="mobileCameraTitle">同じ構図で撮る</div>
           </div>
           <div class="mobile-camera-actions">
-            <button class="camera-top-button camera-language" id="mobileLanguageButton" type="button">EN</button>
+            <button class="camera-top-button camera-language" id="mobileLanguageButton" type="button" title="英語に切り替え">EN</button>
             <button class="camera-top-button" id="mobileHelpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9a2.6 2.6 0 1 1 4.3 2c-1 .7-1.9 1.1-1.9 2.5M12 17h.01"/></svg>
             </button>
@@ -1316,11 +1316,13 @@
         document.querySelectorAll('[data-i18n-title]').forEach(element => { element.title = translate(element.dataset.i18nTitle); });
         document.querySelectorAll('[data-i18n-aria-label]').forEach(element => { element.setAttribute('aria-label', translate(element.dataset.i18nAriaLabel)); });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(element => { element.setAttribute('placeholder', translate(element.dataset.i18nPlaceholder)); });
-        const languageLabel = state.language === 'ja' ? 'EN' : '日本語';
+        const languageLabel = state.language === 'ja' ? 'EN' : 'JA';
         const languageAria = state.language === 'ja' ? '英語に切り替え' : 'Switch to Japanese';
         $('#languageButton').textContent = languageLabel;
+        $('#languageButton').title = languageAria;
         $('#languageButton').setAttribute('aria-label', languageAria);
         $('#mobileLanguageButton').textContent = languageLabel;
+        $('#mobileLanguageButton').title = languageAria;
         $('#mobileLanguageButton').setAttribute('aria-label', languageAria);
         $('#headerAppName').textContent = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
         $('#mobileCameraTitle').textContent = state.language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
