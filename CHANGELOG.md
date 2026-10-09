@@ -2,6 +2,10 @@
 
 All notable changes to Photo Re-Enactor are documented here.
 
+## 1.1.2 - 2026-10-09
+
+- Refresh the app header and embedded favicon with the supplied artwork; keep the SVG asset and generated standalone releases synchronized.
+
 ## 1.1.1 - 2026-10-08
 
 - Normalize header EN / JA labels and localized language/Help tooltips and accessible names.
