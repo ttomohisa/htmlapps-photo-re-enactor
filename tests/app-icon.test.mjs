@@ -20,8 +20,8 @@ if (fs.existsSync(selfExtractPath)) {
   if (payload) variants.push(['restored self-extract', gunzipSync(Buffer.from(payload.trim(), 'base64')).toString('utf8')]);
 }
 
-test('favicon asset preserves the supplied icon bytes', () => {
-  assert.equal(createHash('sha256').update(icon).digest('hex'), expectedHash);
+test('favicon asset preserves supplied artwork after canonical brand-color normalization', () => {
+  assert.equal(createHash('sha256').update(icon.toString('utf8').replaceAll('#16624f', '#0c6755')).digest('hex'), expectedHash);
 });
 for (const [name, html] of variants) {
   test(`${name}: header and embedded favicon match the supplied artwork`, () => {

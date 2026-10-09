@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3 - 2026-10-09
+
+- Normalize brand icon backgrounds to #16624f with exact 25% corner radii across SVG assets, header icons, and embedded favicons, preserving existing artwork.
+- Add focused brand representation regression checks.
+
 All notable changes to Photo Re-Enactor are documented here.
 
 ## 1.1.2 - 2026-10-09

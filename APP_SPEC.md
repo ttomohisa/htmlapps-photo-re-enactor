@@ -1,9 +1,9 @@
-# APP_SPEC.md — Photo Re-Enactor v1.1.2
+# APP_SPEC.md — Photo Re-Enactor v1.1.3
 
 ## 1. Product identity
 
 - **Name:** Photo Re-Enactor / 同じ構図で撮る
-- **Version:** v1.1.2
+- **Version:** v1.1.3
 - **Purpose:** Use a previous or Before photo as a ghost overlay while photographing the same scene again.
 - **Primary environment:** Smartphone camera, with desktop support.
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
@@ -109,7 +109,7 @@ The application HTML itself can open through `file://`, but camera APIs may be u
 
 ## 11. Release status
 
-v1.1.2 is the current stable release. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
+v1.1.3 is the current stable release. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
 
 
 ## v1.1.0 camera UI refresh
@@ -152,7 +152,11 @@ v1.1.2 is the current stable release. It keeps the v1.0.0 capture and export flo
 - The language control shows EN in Japanese and JA in English, with a destination title and accessible name localized to the current UI language. Existing header Help attributes are localized.
 - Existing Japanese local-processing badges use 完全ローカル処理, with accurate English wording retained. Layout, processing boundaries, persistence, model/camera behavior, and their existing limitations are unchanged.
 
-## Icon refresh (1.1.2)
+## Icon refresh (1.1.3)
 
 - The header and embedded favicon use the supplied artwork from `assets/favicon.svg`, preserving its original `0 0 64 64` viewBox.
 - The header keeps its existing responsive icon slot; readable and self-extract releases inherit the same embedded favicon.
+
+## Brand icon consistency
+
+- Brand backgrounds use #16624f with corner radii equal to exactly 25% of each background axis. Preserve foreground artwork, placement, and existing canvas padding across SVG assets, app headers, and embedded favicons.
