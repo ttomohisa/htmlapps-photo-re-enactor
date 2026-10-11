@@ -37,8 +37,8 @@ test('the tested Help scroll shell and camera-screen rules remain available', ()
   assert.match(css, /body\.camera-mode \.mobile-flow-bar\s*\{\s*display:\s*none !important/);
   assert.match(html, /data-i18n="helpOffline"/);
 });
-test('the new Help explanation is present in Japanese and English', () => {
-  assert.match(html, /data-i18n="helpLayout"/);
-  assert.match(html, /helpLayout: '使い方を開いている間は背景のスクロールを止めます。狭い画面でもアプリ名とバージョンを確認できます。'/);
-  assert.match(html, /helpLayout: 'Opening Help pauses background scrolling\. The app name and version remain visible on narrow screens\.'/);
+test('Help omits internal layout and focus audit prose', () => {
+  assert.doesNotMatch(html, /data-i18n="helpLayout"/);
+  assert.doesNotMatch(html, /helpLayout: '使い方を開いている間は背景のスクロールを止めます。狭い画面でもアプリ名とバージョンを確認できます。'/);
+  assert.doesNotMatch(html, /helpLayout: 'Opening Help pauses background scrolling\. The app name and version remain visible on narrow screens\.'/);
 });
