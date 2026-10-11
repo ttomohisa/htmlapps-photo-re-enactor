@@ -120,3 +120,7 @@ Bug reports and feature proposals are welcome through GitHub Issues. See [CONTRI
 Copyright © 2026 ttomohisa
 
 Licensed under the [MIT License](LICENSE).
+
+## Responsive layout audit
+
+The v1.1.4 patch keeps the app name/version visible in narrow headers and pauses background scrolling while Help is open. The existing Help scroll area is preserved. Loaded reference, camera, capture and export workflows remain separate verification gates.

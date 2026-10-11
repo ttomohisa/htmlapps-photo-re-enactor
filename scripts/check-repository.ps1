@@ -200,7 +200,7 @@ $previousExportHtml = $env:PHOTO_EXPORT_HTML
 try {
   foreach ($relative in @("src\index.template.html", "photo-re-enactor.html", "dist\index.html", "dist\index.self-extract.html")) {
     $env:PHOTO_EXPORT_HTML = Join-Path $Root $relative
-    & node --test (Join-Path $Root "tests\comparison-export.test.cjs")
+    & node --test (Join-Path $Root "tests\comparison-export.test.cjs") (Join-Path $Root "tests\help-header-layout.test.cjs")
     if ($LASTEXITCODE -ne 0) { throw "Comparison export tests failed: $relative" }
   }
 } finally {

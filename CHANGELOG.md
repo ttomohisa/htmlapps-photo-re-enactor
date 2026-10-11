@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.4 - 2026-10-10
+
+- Pause background page scrolling only while Help is modal, preserving the existing scrollable Help shell.
+- Wrap the app title and version on narrow screens while keeping the language and Help controls available.
+- Add responsive layout regression contracts alongside the existing export checks.
+
 ## 1.1.3 - 2026-10-09
 
 - Normalize brand icon backgrounds to #16624f with exact 25% corner radii across SVG assets, header icons, and embedded favicons, preserving existing artwork.

@@ -1,9 +1,9 @@
-# APP_SPEC.md — Photo Re-Enactor v1.1.3
+# APP_SPEC.md — Photo Re-Enactor v1.1.4
 
 ## 1. Product identity
 
 - **Name:** Photo Re-Enactor / 同じ構図で撮る
-- **Version:** v1.1.3
+- **Version:** v1.1.4
 - **Purpose:** Use a previous or Before photo as a ghost overlay while photographing the same scene again.
 - **Primary environment:** Smartphone camera, with desktop support.
 - **Release artifacts:** `dist/index.html` and `dist/index.self-extract.html`
@@ -109,7 +109,7 @@ The application HTML itself can open through `file://`, but camera APIs may be u
 
 ## 11. Release status
 
-v1.1.3 is the current stable release. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
+v1.1.4 is the responsive-audit patch candidate. Help locks background page scrolling only while open as a modal; narrow headers wrap the title and version while retaining the language and Help controls. The existing Help scroll shell is preserved. This patch still requires loaded reference/camera/capture/export verification; the following historical verification statement applies to the prior core release, not new device testing. It keeps the v1.0.0 capture and export flow while refreshing the camera surface to match the smartphone-first camera UI used by QR Reader. The core flow has been verified with real-camera testing, smartphone portrait/landscape checks, desktop checks, local-only runtime constraints, and export regression checks. Person pose matching remains a later feature.
 
 
 ## v1.1.0 camera UI refresh
