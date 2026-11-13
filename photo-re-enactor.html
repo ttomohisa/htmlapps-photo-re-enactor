@@ -93,8 +93,8 @@
     .brand-copy { min-width: 0; }
     .brand-name { margin: 0; font-size: 16px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .version-badge {
-      display: inline-flex; margin-left: 6px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 999px;
-      background: var(--surface-muted); color: var(--muted); font-size: 10px; font-weight: 700; vertical-align: 2px;
+      display: inline-flex; align-items: center; margin-left: 7px; padding: 1px 6px; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface-muted); color: var(--muted); font-size: 11px; font-weight: 650; vertical-align: 2px;
     }
     .brand-meta { margin: 2px 0 0; color: var(--muted); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .header-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
@@ -110,9 +110,9 @@
     .page-intro h2 { margin: 0; font-size: clamp(23px, 4vw, 31px); line-height: 1.24; letter-spacing: -.03em; }
     .page-intro p { margin: 7px 0 0; max-width: 680px; color: var(--muted); font-size: 13px; }
     .local-badge {
-      display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; margin-top: 3px; padding: 7px 10px;
-      border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius: 999px; background: var(--accent-soft);
-      color: var(--accent); font-size: 12px; font-weight: 750; white-space: nowrap;
+      display: inline-flex; flex: 0 0 auto; align-items: center; gap: 7px; margin-top: 3px; padding: 7px 0;
+      border: 0; border-radius: 0; background: transparent;
+      color: var(--accent); font-size: 12px; font-weight: 500; white-space: nowrap;
     }
     .local-badge svg { width: 15px; height: 15px; }
     .card { border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-sm); }
@@ -146,6 +146,10 @@
     .start-flow-item p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
     .start-capabilities { color: var(--muted); font-size: 10px; font-weight: 650; text-align: center; margin: -4px auto 2px; }
     .format-note { color: var(--muted); font-size: 11px; }
+    .file-fallback-button { display: none; }
+    @media (max-width: 767px), (pointer: coarse) and (max-height: 600px) {
+      .file-fallback-button { display: block; width: 100%; margin-top: 8px; padding: 10px; border: 0; background: transparent; color: var(--accent); font-size: 13px; font-weight: 650; min-height: 44px; cursor: pointer; }
+    }
     .button {
       min-height: 42px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface);
       font-weight: 750; cursor: pointer; transition: border-color .16s ease, background .16s ease, transform .16s ease;
@@ -314,9 +318,9 @@
     .dialog-body { max-height: min(76vh, 680px); overflow: auto; padding: 20px; overscroll-behavior: contain; }
     .dialog-head { position: sticky; z-index: 2; top: -20px; margin: -20px -20px 14px; padding: 17px 20px 12px; display: flex; align-items: center; gap: 12px; background: color-mix(in srgb, var(--surface) 94%, transparent); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
     .dialog-head h2 { margin: 0; font-size: 18px; }
-    .dialog-close { margin-left: auto; border: 0; background: transparent; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; color: var(--muted); }
+    .dialog-close { margin-left: auto; border: 0; background: transparent; width: 34px; height: 34px; border-radius: 9px; cursor: pointer; display: grid; place-items: center; color: var(--muted); }
     .dialog-close:hover { background: var(--surface-muted); color: var(--text); }
-    .dialog-close svg { width: 19px; height: 19px; }
+    .dialog-close svg { width: 18px; height: 18px; }
     .dialog-body h3 { margin: 19px 0 7px; font-size: 14px; }
     .dialog-body p, .dialog-body li { color: var(--muted); font-size: 12px; }
     .dialog-body ol, .dialog-body ul { padding-left: 20px; }
@@ -339,7 +343,7 @@
     .mobile-flow-action svg { width: 20px; height: 20px; flex: 0 0 auto; }
     .mobile-flow-action.primary { background: var(--accent); color: #fff; }
     .mobile-flow-action.secondary { background: var(--surface-muted); color: var(--text); }
-    footer { width: min(1040px, 100%); margin: 0 auto; padding: 0 clamp(14px, 2.8vw, 30px) 32px; color: var(--muted); font-size: 11px; }
+    footer { width: min(1040px, 100%); margin: 0 auto; padding: 0 clamp(14px, 2.8vw, 30px) 34px; color: var(--muted); font-size: 12px; }
     @media (max-width: 760px) {
       .main { padding-top: 14px; }
       .page-intro { align-items: center; }
@@ -814,7 +818,7 @@
         <p data-i18n="introBody">昔の写真やBefore写真をカメラ映像へ重ねて、できるだけ同じ構図で撮影できます。</p>
       </div>
       <div class="local-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
         <span data-i18n="localBadge">完全ローカル処理</span>
       </div>
     </section>
@@ -845,6 +849,8 @@
         </button>
         <span class="format-note" data-i18n="formats">JPEG / PNG / WebP · 最大50 MB</span>
       </div>
+      <button class="file-fallback-button" id="fileFallbackButton" type="button" data-i18n="fileFallback">ファイルから選択</button>
+      <input id="fileFallbackInput" type="file" hidden>
       <div class="privacy-line">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.7 8 7 10 4.3-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
         <span data-i18n="choosePrivacy">写真はこの端末内だけで処理します。</span>
@@ -1089,7 +1095,7 @@
     <!-- APP:END -->
   </main>
 
-  <footer><span id="footerName">Photo Re-Enactor</span> · MIT License · <span data-i18n="footer">写真やカメラ映像を外部へ送信しません</span></footer>
+  <footer><span id="footerName">Photo Re-Enactor</span> · MIT License · <span data-i18n="footer">写真の比較と撮影はブラウザー内で完結</span></footer>
 
   <nav class="mobile-flow-bar" id="mobileFlowBar" hidden aria-label="主な操作" data-i18n-aria-label="mobileActions">
     <div class="mobile-flow-group" data-mobile-phase="empty">
@@ -1183,7 +1189,7 @@
       'use strict';
 
       const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Photo Re-Enactor","nameJa":"同じ構図で撮る","slug":"photo-re-enactor","version":"1.1.4","description":"Use a reference photo as a ghost overlay to retake a scene from nearly the same composition, entirely in the browser.","descriptionJa":"元写真をカメラ映像へ重ね、できるだけ同じ構図で撮り直すためのブラウザツールです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-photo-re-enactor"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":8,"selfExtractWarningMb":4}}};
-      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-10-11T22:22:07.6304511Z","app":{"name":"Photo Re-Enactor","slug":"photo-re-enactor","version":"1.1.4"},"dependencies":[]};
+      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.2","generatedAtUtc":"2026-11-13T22:01:48.0839193Z","app":{"name":"Photo Re-Enactor","slug":"photo-re-enactor","version":"1.1.4"},"dependencies":[]};
       // Asset payloads are Base64 exactly once. The JSON bundle itself is embedded directly.
       const assetBundle = {"schemaVersion":2,"dependencies":{}};
       const blobUrls = new Set();
@@ -1242,7 +1248,7 @@
       const translations = {
         ja: {
           brandMeta: '写真を重ねて構図を合わせる · 完全ローカル処理', introTitle: '同じ構図で、もう一度撮る', introBody: '昔の写真やBefore写真をカメラ映像へ重ねて、できるだけ同じ構図で撮影できます。', localBadge: '完全ローカル処理',
-          chooseTitle: '同じ構図で撮り直したい写真を選んでください', chooseBody: '元写真を重ねて構図を合わせ、撮影後はBefore / Afterで見比べて保存できます。', chooseButton: '元写真を選ぶ', formats: 'JPEG / PNG / WebP · 最大50 MB', choosePrivacy: '写真はこの端末内だけで処理します。', startFlowLabel: '撮影の流れ', startFlow1Title: '元写真を選ぶ', startFlow1Body: '昔の写真やBefore写真を読み込みます', startFlow2Title: '重ねて構図を合わせる', startFlow2Body: 'Ghost / Splitや構図ガイドを見ながら撮影します', startFlow3Title: '比べて保存する', startFlow3Body: 'Before / After、比較画像・HTMLで残せます', startCapabilities: 'Ghost / Outline / Blink / Split · 構図ガイド · タイマー · 比較HTML', mobileActions: '主な操作',
+          chooseTitle: '同じ構図で撮り直したい写真を選んでください', chooseBody: '元写真を重ねて構図を合わせ、撮影後はBefore / Afterで見比べて保存できます。', chooseButton: '元写真を選ぶ', fileFallback: 'ファイルから選択', formats: 'JPEG / PNG / WebP · 最大50 MB', choosePrivacy: '写真はこの端末内だけで処理します。', startFlowLabel: '撮影の流れ', startFlow1Title: '元写真を選ぶ', startFlow1Body: '昔の写真やBefore写真を読み込みます', startFlow2Title: '重ねて構図を合わせる', startFlow2Body: 'Ghost / Splitや構図ガイドを見ながら撮影します', startFlow3Title: '比べて保存する', startFlow3Body: 'Before / After、比較画像・HTMLで残せます', startCapabilities: 'Ghost / Outline / Blink / Split · 構図ガイド · タイマー · 比較HTML', mobileActions: '主な操作',
           step1: 'STEP 1', step2: 'STEP 2', readyTitle: '元写真を確認しました', readyBody: 'この写真をライブ映像へ重ねて構図を合わせます。カメラ映像は外部へ送信されません。', startCamera: '撮影を開始', startingCamera: 'カメラを準備中…', changeReference: '別の写真を選ぶ', permissionNote: '「撮影を開始」を押したときだけカメラ権限を求めます。', details: '詳細',
           backToReference: '元写真へ戻る', cameraHint: 'ガイドに合わせてカメラを動かします', gestureHint: '必要なら元写真も手動調整できます', manualAdjust: '元写真を手動調整', manualAdjustHint: '必要なときだけONにしてドラッグ・ピンチします', manualAdjustActive: '元写真を調整中', manualAdjustActiveSub: '調整後にOFFにすると構図ガイドを再開します', adjustOverlay: '重ね方を調整', overlayMode: '表示モード', overlayModeGhostHint: '元写真を半透明で重ねます', overlayModeOutlineHint: '元写真の主な輪郭だけを表示します', overlayModeBlinkHint: '元写真とライブ映像をゆっくり交互に表示します', overlayModeBlinkReducedHint: '動きを減らす設定が有効なため、点滅を停止しています', overlayModeSplitHint: '元写真とライブ映像を境界で見比べます', splitPosition: '境界位置', opacity: '透明度', scale: '元写真の大きさ', rotation: '元写真の傾き', resetOverlay: '位置をリセット', switchCamera: 'カメラ切替', takePhoto: '撮影',
           guideToggle: '構図ガイド', guideToggleHint: '元写真とのずれを目安として案内します', guideCaution: '一致度は構図の近さの目安です', guidePreparing: '構図を確認しています…', guidePreparingShort: '構図を確認中…', guideOff: '構図ガイドはOFFです', guideUnavailable: '自動で構図を確認できません', guideUnavailableSub: '重ね表示を使って手動で合わせられます', guideClose: 'ほぼ同じ構図です', guideLeft: 'カメラを少し左へ', guideRight: 'カメラを少し右へ', guideUp: 'カメラを少し上へ', guideDown: 'カメラを少し下へ', guideCloser: '少し近づいてください', guideFarther: '少し離れてください', guideTiltLeft: 'カメラを左へ傾けてください', guideTiltRight: 'カメラを右へ傾けてください', guideScore: '構図の一致 {score}%',
@@ -1250,11 +1256,11 @@
           resultDisplayMode: '比較表示', retakeConfirmTitle: '撮り直しますか？', retakeConfirmBody: '撮影画面へ戻ります。現在の結果は次の撮影が完了するまで保持します。', downloadBefore: '元写真を保存', downloadAfter: '撮影した写真を保存', resultTitle: '撮影できました', resultBody: '画像上の境界を動かして元写真と撮影した写真を比較できます。', compareSlider: 'Before / After比較', compareDragHint: '画像上のハンドルを左右に動かして比較できます。', step5: 'STEP 5', saveTitle: '撮影結果を保存', saveBody: '写真は自動保存されません。必要な形式だけ端末へ保存してください。', outputFilename: '出力ファイル名', outputFilenameHint: '拡張子は保存形式に応じて自動で付きます', savePhoto: '撮影した写真を保存', saveCompareImage: '比較画像を保存', comparisonLayout: '比較JPEGの配置', comparisonLayoutSideBySide: '左右', comparisonLayoutStacked: '上下（上がBefore、下がAfter）', saveCompareHtml: '比較HTMLを保存', comparisonComment: '比較HTMLのコメント（任意）', comparisonCommentPlaceholder: '例：リフォーム後 2026年9月', retake: '撮り直す', newReference: '別の元写真にする', comparisonSaved: '比較画像を保存しました', htmlSaved: '比較HTMLを保存しました',
           exportHtmlTitle: '比較HTMLを保存しますか？', exportHtmlPrivacy: '比較HTMLには元写真と撮影した写真の両方を埋め込みます。このHTMLを誰かへ送ると、写真も相手へ渡ります。', exportHtmlOffline: 'HTMLは外部通信なしで単体表示できます。', cancel: 'キャンセル',
           helpTitle: '使い方と注意事項', close: '閉じる', helpBasicsTitle: '基本操作', helpStep1: '同じ構図で撮り直したい元写真を選びます。この時点ではカメラを起動しません。', helpStep2: '元写真を確認して「撮影を開始」を押します。Ghost / Outline / Blink / Splitから見やすい重ね方を選べます。', helpStep3: '構図ガイドが使える場面では、左右・上下・距離・傾きのうち現在もっとも大きいずれを1つ案内します。ガイドをOFFにして手動だけでも撮影できます。', helpStep4: '必要ならタイマーを使って撮影します。撮影後は写真・比較JPEG・比較HTMLを保存できます。比較JPEGの配置は左右または上下（上がBefore、下がAfter）から選べます。', helpExportSnapshot: '比較保存は操作時点の写真と設定を使います。保存中に別の元写真や新しい撮影結果へ変わると中止します。配置は再読み込みで左右に戻ります。', helpPrivacyTitle: 'プライバシー', helpPrivacyBody: '元写真、カメラ映像、撮影画像はブラウザ内だけで処理します。このアプリから外部サーバーへ送信せず、写真をブラウザ内へ自動保存もしません。', helpNotesTitle: '注意事項', helpNoteCamera: 'カメラはブラウザのセキュリティ制約により、HTTPSまたはlocalhostでの利用が基本です。単一HTMLを直接開いた場合はカメラを利用できないことがあります。', helpNoteManual: '自動ガイドは画像の特徴が少ない場面、暗所、ぼけ、大きく変化した場面などでは利用できないことがあります。その場合も重ね表示で手動撮影できます。', helpNoteSave: '構図の一致は写真品質の評価ではなく、元写真との構図の近さの目安です。撮影をブロックする条件には使いません。',  helpOffline: '実行時の外部通信はありません。写真とカメラ映像は完全ローカル処理です。',
-          footer: '写真やカメラ映像を外部へ送信しません', invalidFileTitle: '写真を読み込めませんでした', invalidType: 'JPEG / PNG / WebP の写真を選んでください。', tooLarge: '50 MB以下の写真を選んでください。', decodeFailed: '写真を表示できませんでした。ファイルが破損している可能性があります。', cameraUnavailableTitle: 'カメラを使用できませんでした', cameraPermission: 'ブラウザのカメラ許可を確認してください。元写真はそのまま確認できます。', cameraMissing: '利用できるカメラが見つかりませんでした。', cameraSecure: 'この環境ではカメラ撮影を利用できません。HTTPSまたはlocalhostで開いてください。', cameraGeneric: '撮影を開始できませんでした。ブラウザまたは端末のカメラ設定を確認してください。', cameraSwitchFailed: 'カメラを切り替えられませんでした。元のカメラへ戻しました。', captureFailed: '撮影画像を作成できませんでした。もう一度撮影してください。', saved: '写真を保存しました', overlayReset: '元写真の位置をリセットしました', cameraOnlyOne: 'この端末では切り替え可能な別のカメラを確認できませんでした。'
+          footer: '写真の比較と撮影はブラウザー内で完結', invalidFileTitle: '写真を読み込めませんでした', invalidType: 'JPEG / PNG / WebP の写真を選んでください。', tooLarge: '50 MB以下の写真を選んでください。', decodeFailed: '写真を表示できませんでした。ファイルが破損している可能性があります。', cameraUnavailableTitle: 'カメラを使用できませんでした', cameraPermission: 'ブラウザのカメラ許可を確認してください。元写真はそのまま確認できます。', cameraMissing: '利用できるカメラが見つかりませんでした。', cameraSecure: 'この環境ではカメラ撮影を利用できません。HTTPSまたはlocalhostで開いてください。', cameraGeneric: '撮影を開始できませんでした。ブラウザまたは端末のカメラ設定を確認してください。', cameraSwitchFailed: 'カメラを切り替えられませんでした。元のカメラへ戻しました。', captureFailed: '撮影画像を作成できませんでした。もう一度撮影してください。', saved: '写真を保存しました', overlayReset: '元写真の位置をリセットしました', cameraOnlyOne: 'この端末では切り替え可能な別のカメラを確認できませんでした。'
         },
         en: {
           brandMeta: 'Reference overlay · Fully local processing', introTitle: 'Retake it from the same composition', introBody: 'Overlay an old or Before photo on the live camera and line up the scene before taking a new photo.', localBadge: 'Fully local processing',
-          chooseTitle: 'Choose the photo you want to recreate', chooseBody: 'Overlay the reference, line up the composition, then compare and save the Before / After result.', chooseButton: 'Choose reference photo', formats: 'JPEG / PNG / WebP · up to 50 MB', choosePrivacy: 'Your photo is processed only on this device.', startFlowLabel: 'Capture flow', startFlow1Title: 'Choose a reference', startFlow1Body: 'Use an old photo or Before image', startFlow2Title: 'Line up and capture', startFlow2Body: 'Use Ghost / Split and the composition guide', startFlow3Title: 'Compare and save', startFlow3Body: 'Keep Before / After, an image, or comparison HTML', startCapabilities: 'Ghost / Outline / Blink / Split · composition guide · timer · comparison HTML', mobileActions: 'Main actions',
+          chooseTitle: 'Choose the photo you want to recreate', chooseBody: 'Overlay the reference, line up the composition, then compare and save the Before / After result.', chooseButton: 'Choose reference photo', fileFallback: 'Choose from files', formats: 'JPEG / PNG / WebP · up to 50 MB', choosePrivacy: 'Your photo is processed only on this device.', startFlowLabel: 'Capture flow', startFlow1Title: 'Choose a reference', startFlow1Body: 'Use an old photo or Before image', startFlow2Title: 'Line up and capture', startFlow2Body: 'Use Ghost / Split and the composition guide', startFlow3Title: 'Compare and save', startFlow3Body: 'Keep Before / After, an image, or comparison HTML', startCapabilities: 'Ghost / Outline / Blink / Split · composition guide · timer · comparison HTML', mobileActions: 'Main actions',
           step1: 'STEP 1', step2: 'STEP 2', readyTitle: 'Reference photo ready', readyBody: 'This photo will be placed over the live view so you can line up the composition. Camera video is not sent outside the browser.', startCamera: 'Start shooting', startingCamera: 'Starting camera…', changeReference: 'Choose another photo', permissionNote: 'Camera permission is requested only after you press Start shooting.', details: 'Details',
           backToReference: 'Back to reference', cameraHint: 'Move the camera to follow the composition guide', gestureHint: 'You can manually adjust the reference if needed', manualAdjust: 'Adjust reference manually', manualAdjustHint: 'Turn this on only when you need to drag or pinch the reference', manualAdjustActive: 'Adjusting reference', manualAdjustActiveSub: 'Turn this off to resume composition guidance', adjustOverlay: 'Adjust overlay', overlayMode: 'Overlay mode', overlayModeGhostHint: 'Shows the reference as a transparent overlay', overlayModeOutlineHint: 'Shows the main reference edges only', overlayModeBlinkHint: 'Slowly alternates the reference and live view', overlayModeBlinkReducedHint: 'Blink is paused because reduced-motion is enabled', overlayModeSplitHint: 'Compares the reference and live view across a movable boundary', splitPosition: 'Split position', opacity: 'Opacity', scale: 'Reference size', rotation: 'Reference tilt', resetOverlay: 'Reset position', switchCamera: 'Switch camera', takePhoto: 'Take photo',
           guideToggle: 'Composition guide', guideToggleHint: 'Uses the reference to suggest the largest current offset', guideCaution: 'The match score is only a composition estimate', guidePreparing: 'Checking composition…', guidePreparingShort: 'Checking…', guideOff: 'Composition guide is off', guideUnavailable: 'Automatic composition check is unavailable', guideUnavailableSub: 'You can still line up the scene with the overlay', guideClose: 'Composition looks very close', guideLeft: 'Move the camera a little to the left', guideRight: 'Move the camera a little to the right', guideUp: 'Move the camera a little up', guideDown: 'Move the camera a little down', guideCloser: 'Move a little closer', guideFarther: 'Move a little farther away', guideTiltLeft: 'Tilt the camera a little to the left', guideTiltRight: 'Tilt the camera a little to the right', guideScore: 'Composition match {score}%',
@@ -1262,7 +1268,7 @@
           resultDisplayMode: 'Comparison view', retakeConfirmTitle: 'Retake this photo?', retakeConfirmBody: 'Return to the camera. The current result is kept until a new capture finishes.', downloadBefore: 'Download Before', downloadAfter: 'Download After', resultTitle: 'Photo captured', resultBody: 'Drag the divider on the image to compare the reference with the captured photo.', compareSlider: 'Before / After comparison', compareDragHint: 'Drag the handle on the image left or right to compare.', step5: 'STEP 5', saveTitle: 'Save capture results', saveBody: 'Nothing is saved automatically. Save only the formats you want to keep.', outputFilename: 'Output filename', outputFilenameHint: 'The extension is added automatically for each format', savePhoto: 'Save captured photo', saveCompareImage: 'Save comparison image', comparisonLayout: 'Comparison JPEG layout', comparisonLayoutSideBySide: 'Side by side', comparisonLayoutStacked: 'Stacked (Before above After)', saveCompareHtml: 'Save comparison HTML', comparisonComment: 'Comparison HTML comment (optional)', comparisonCommentPlaceholder: 'e.g. After renovation · Sep 2026', retake: 'Retake', newReference: 'Use another reference', comparisonSaved: 'Comparison image saved', htmlSaved: 'Comparison HTML saved',
           exportHtmlTitle: 'Save comparison HTML?', exportHtmlPrivacy: 'The comparison HTML embeds both the reference and captured photo. Sharing the HTML also shares those photos.', exportHtmlOffline: 'The HTML opens by itself without external network access.', cancel: 'Cancel',
           helpTitle: 'How to use & notes', close: 'Close', helpBasicsTitle: 'Basics', helpStep1: 'Choose the reference photo you want to recreate. The camera does not start yet.', helpStep2: 'Review the reference and press Start shooting. Choose Ghost, Outline, Blink, or Split depending on which view is easiest to line up.', helpStep3: 'When automatic guidance is available, it shows the single largest offset among left/right, up/down, distance, and tilt. You can turn the guide off and shoot manually at any time.', helpStep4: 'Use a timer if needed, then take the photo. Save the captured photo, a comparison JPEG, or comparison HTML. Choose Side by side or Stacked (Before above After) for the JPEG layout.', helpExportSnapshot: 'Comparison exports use the photos and settings from when you start saving. Replacing the reference or captured result cancels an unfinished export. The JPEG layout resets to Side by side on reload.', helpPrivacyTitle: 'Privacy', helpPrivacyBody: 'Reference photos, camera video, and captured photos are processed only in the browser. This app does not send them to an external server or automatically store photos in browser storage.', helpNotesTitle: 'Notes', helpNoteCamera: 'Browser security rules normally require HTTPS or localhost for camera access. Camera capture may be unavailable when the standalone HTML is opened directly.', helpNoteManual: 'Automatic guidance may be unavailable for low-detail scenes, darkness, blur, or scenes that have changed substantially. Manual overlay shooting remains available.', helpNoteSave: 'The composition match is only an estimate of similarity to the reference composition, not a photo quality score, and it never blocks capture.',  helpOffline: 'There are no runtime network connections. Photos and camera video are processed fully locally.',
-          footer: 'Photos and camera video are never sent outside this app', invalidFileTitle: 'Could not load the photo', invalidType: 'Choose a JPEG, PNG, or WebP photo.', tooLarge: 'Choose a photo smaller than 50 MB.', decodeFailed: 'The photo could not be displayed. The file may be damaged.', cameraUnavailableTitle: 'Could not use the camera', cameraPermission: 'Check this site’s camera permission in your browser. The reference photo is still available.', cameraMissing: 'No usable camera was found on this device.', cameraSecure: 'Camera capture is unavailable in this context. Open the app over HTTPS or localhost.', cameraGeneric: 'The camera could not start. Check your browser and device camera settings.', cameraSwitchFailed: 'Could not switch cameras. The previous camera was restored.', captureFailed: 'Could not create the captured image. Please try again.', saved: 'Photo saved', overlayReset: 'Reference position reset', cameraOnlyOne: 'No second camera is currently available to switch to.'
+          footer: 'Comparing and retaking photos stays in the browser', invalidFileTitle: 'Could not load the photo', invalidType: 'Choose a JPEG, PNG, or WebP photo.', tooLarge: 'Choose a photo smaller than 50 MB.', decodeFailed: 'The photo could not be displayed. The file may be damaged.', cameraUnavailableTitle: 'Could not use the camera', cameraPermission: 'Check this site’s camera permission in your browser. The reference photo is still available.', cameraMissing: 'No usable camera was found on this device.', cameraSecure: 'Camera capture is unavailable in this context. Open the app over HTTPS or localhost.', cameraGeneric: 'The camera could not start. Check your browser and device camera settings.', cameraSwitchFailed: 'Could not switch cameras. The previous camera was restored.', captureFailed: 'Could not create the captured image. Please try again.', saved: 'Photo saved', overlayReset: 'Reference position reset', cameraOnlyOne: 'No second camera is currently available to switch to.'
         }
       };
 
@@ -2124,6 +2130,9 @@
       ['dragleave', 'drop'].forEach(type => dropZone.addEventListener(type, event => { event.preventDefault(); dropZone.classList.remove('is-dragging'); }));
       dropZone.addEventListener('drop', event => { const file = event.dataTransfer?.files?.[0]; if (file) loadReference(file); });
       fileInput.addEventListener('change', () => { const file = fileInput.files?.[0]; if (file) loadReference(file); fileInput.value = ''; });
+      const fileFallbackInput = $('#fileFallbackInput');
+      $('#fileFallbackButton').addEventListener('click', () => { fileFallbackInput.value = ''; fileFallbackInput.click(); });
+      fileFallbackInput.addEventListener('change', () => { const file = fileFallbackInput.files?.[0]; if (file) loadReference(file); fileFallbackInput.value = ''; });
       $('#changeReferenceButton').addEventListener('click', chooseNewReference);
       $('#newReferenceFromResultButton').addEventListener('click', chooseNewReference);
       $('#startCameraButton').addEventListener('click', startCamera);
